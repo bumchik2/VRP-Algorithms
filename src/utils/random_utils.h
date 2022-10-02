@@ -11,4 +11,4 @@ void fix_random_seed(int random_seed);
 
 int randint(int l, int r);
 
-double random_double();
+float random_float();

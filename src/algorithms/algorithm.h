@@ -14,7 +14,7 @@ public:
 
     virtual void solve_problem() {};
 
-private:
+protected:
     const ProblemDescription& _problem_description;
     ProblemSolution& _problem_solution;
 };
