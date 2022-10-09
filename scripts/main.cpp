@@ -41,6 +41,7 @@ int main() {
     algorithm.save_checkpoints("test_data/results/annealing/simple_test_1/checkpoints_1.json");
     algorithm.save_penalty_history("test_data/results/annealing/simple_test_1/penalty_history_1.json");
 
+    // TODO: делать сравнение на более сложных задачах
     // TODO: возможно, стоит заменить вектор из penalty на unordered_map из penalty?
     // TODO наверное нужно как-то разделить file_utils
     // TODO: добавить тесты на всякие утили хотя бы
