@@ -8,7 +8,7 @@
 
 class Depot {
 public:
-    Depot(std::string id, float lat, float lon):
+    Depot(std::string id, float lat, float lon) :
             id(std::move(id)), lat(lat), lon(lon) {}
 
     std::string id;

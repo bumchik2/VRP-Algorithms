@@ -8,7 +8,7 @@
 
 class Courier {
 public:
-    Courier(std::string id, std::string depot_id):
+    Courier(std::string id, std::string depot_id) :
             id(std::move(id)), depot_id(std::move(depot_id)) {}
 
     std::string id;
