@@ -1,0 +1,11 @@
+[
+  {"id": "1", "depot_id": "1", "lat": 48.7703247070313, "lon": 44.5521697998047, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "2", "depot_id": "1", "lat": 48.7110023498535, "lon": 44.5279693603516, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "3", "depot_id": "1", "lat": 48.7966842651367, "lon": 44.5871086120606, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "4", "depot_id": "1", "lat": 48.7309989929199, "lon": 44.5343055725098, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "5", "depot_id": "1", "lat": 48.7227363586426, "lon": 44.5314102172852, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "6", "depot_id": "1", "lat": 48.6288299560547, "lon": 44.420955657959, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "7", "depot_id": "1", "lat": 48.6177749633789, "lon": 44.428581237793, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "8", "depot_id": "1", "lat": 48.6622314453125, "lon": 44.4452972412109, "time_window_start_s": 0, "time_window_end_s": 86399},
+  {"id": "9", "depot_id": "1", "lat": 48.6590881347656, "lon": 44.416202545166, "time_window_start_s": 0, "time_window_end_s": 86399}
+]
