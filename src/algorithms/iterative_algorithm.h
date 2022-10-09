@@ -5,17 +5,22 @@
 #pragma once
 
 #include "algorithm.h"
+#include "../../json/single_include/nlohmann/json.hpp"
 
 #include <vector>
 #include <stdexcept>
 #include <iostream>
-
+#include <unordered_map>
+#include <string>
 
 struct CheckPoint {
     int iteration_number;
-    std::vector<float> penalty_values;
+    std::unordered_map<std::string, float> penalty_values;
+    float total_penalty;
     std::vector<Route> routes;
 };
+
+void to_json(nlohmann::json& j, const CheckPoint& checkpoint);
 
 
 class IterativeAlgorithm : public Algorithm {
@@ -36,11 +41,15 @@ public:
         throw std::runtime_error("virtual _make_step from class IterativeAlgorithm is called");
     };
 
-    [[nodiscard]] const std::vector<std::vector<float>>& get_history() const {
+    [[nodiscard]] const std::vector<std::vector<float>>& get_penalty_history() const {
         return _penalty_history;
     }
 
     void solve_problem() override;
+
+    void save_penalty_history(const std::string& filename) const;
+
+    void save_checkpoints(const std::string& filename) const;
 
 protected:
     std::vector<std::vector<float>> _penalty_history;
@@ -50,5 +59,5 @@ protected:
 private:
     int _checkpoints_number;
     std::vector<CheckPoint> _checkpoints;
-    void _save_checkpoint(int step_number);
+    void _make_checkpoint(int step_number);
 };

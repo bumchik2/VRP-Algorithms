@@ -16,9 +16,13 @@ public:
 
     ~DistancePenalty() override = default;
 
-    float get_penalty(const std::vector<Route> &routes) const override;
+    [[nodiscard]] float get_penalty(const std::vector<Route> &routes) const override;
 
-    std::string get_name() const override {
+    [[nodiscard]] std::string get_short_name() const override {
+        return "distance-penalty";
+    }
+
+    [[nodiscard]] std::string get_name() const override {
         return "[Distance penalty with multiplier " + float_to_string(_penalty_multiplier, 2) + "]";
     }
 };

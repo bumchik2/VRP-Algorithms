@@ -21,6 +21,7 @@ set(SOURCES
         src/objects/courier.cpp
         src/objects/location.cpp
         src/objects/depot.cpp
+        src/objects/route.cpp
         src/matrices/distance_matrix.cpp
         src/matrices/time_matrix.cpp
         src/problem/problem_initialization/problem_initialization.cpp

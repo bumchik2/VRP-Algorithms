@@ -23,6 +23,11 @@ nlohmann::json read_json(const std::string &path_to_json) {
     return result;
 }
 
+void save_json(const nlohmann::json& json_to_save, const std::string& filename) {
+    std::ofstream file(filename);
+    file << json_to_save;
+}
+
 ProblemObjects read_request(const std::string &path_to_request) {
     std::unordered_map<std::string, Location> locations;
     std::unordered_map<std::string, Courier> couriers;
@@ -76,10 +81,4 @@ ProblemDescription read_euclidean_problem(const std::string &path_to_request) {
     // TODO: distance_penalty_multiplier should be passed from outside
     return {problem_objects.locations, problem_objects.couriers, problem_objects.depots, distance_matrix, time_matrix,
             10};
-}
-
-std::unordered_map<std::string, Location> read_locations_from_json(const std::string &path_to_json) {
-    nlohmann::json locations_json = read_json(path_to_json);
-    std::cout << locations_json;
-    return {};
 }

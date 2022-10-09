@@ -12,6 +12,7 @@
 #include <string>
 
 nlohmann::json read_json(const std::string &path_to_json);
+void save_json(const nlohmann::json& json_to_save, const std::string& filename);
 
 ProblemObjects read_request(const std::string &path_to_request);
 

@@ -32,7 +32,11 @@ public:
         throw std::runtime_error("Calling get_penalty from base Penalty class");
     };
 
-    virtual std::string get_name() const {
+    [[nodiscard]] virtual std::string get_short_name() const {
+        throw std::runtime_error("Calling get_short_name from base Penalty class");
+    }
+
+    [[nodiscard]] virtual std::string get_name() const {
         throw std::runtime_error("Calling get_name from base Penalty class");
     }
 
