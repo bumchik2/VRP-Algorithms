@@ -10,10 +10,9 @@
 void solve_problem(
         const ProblemDescription &problem_description,
         ProblemSolution &problem_solution,
-        const ProblemInitialization &problem_initialization,
+        const ProblemInitialization &blem_initialization,
         Algorithm &algorithm) {
     algorithm.solve_problem();
-    // TODO: penalties is a part of the problem description, not the part of the algorithm.
 }
 
 
@@ -39,7 +38,7 @@ int main() {
                   problem_initialization,
                   algorithm);
 
-    const auto& history = algorithm.get_history();
+    const auto &history = algorithm.get_history();
     std::cout << "First penalty change: " << history[0][0] << " -> " << history[0][history[0].size() - 1];
 
     // TODO: refactor reading files and getting eucledian problems
