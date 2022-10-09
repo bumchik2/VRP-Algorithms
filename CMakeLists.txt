@@ -3,13 +3,6 @@ project(VRP_Algorithms)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# not working for some reason
-#file(GLOB SOURCES
-#        CONFIGURE_DEPENDS
-#        "/home/eliseysudakov/VRP-Algorithms/src/*.cpp"
-#        "/home/eliseysudakov/VRP-Algorithms/src/*.h"
-#        )
-
 set(SOURCES
         src/problem/penalties/distance_penalty.cpp
         src/problem/penalties/penalty.cpp
