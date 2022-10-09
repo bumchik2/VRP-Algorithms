@@ -8,11 +8,10 @@
 #include <fstream>
 
 void solve_problem(
-        const ProblemDescription& problem_description,
-        ProblemSolution& problem_solution,
-        const ProblemInitialization& problem_initialization,
-        Algorithm& algorithm) {
-    problem_initialization.initialize(problem_description, problem_solution);
+        const ProblemDescription &problem_description,
+        ProblemSolution &problem_solution,
+        const ProblemInitialization &problem_initialization,
+        Algorithm &algorithm) {
     algorithm.solve_problem();
     // TODO: penalties is a part of the problem description, not the part of the algorithm.
 }
@@ -25,21 +24,23 @@ int main() {
     ProblemDescription problem_description = read_euclidean_problem(test_data_folder);
     ProblemSolution problem_solution(problem_description);
     ProblemInitializationSimple problem_initialization;
+    problem_initialization.initialize(problem_description, problem_solution);
 
     int n_iterations = 100'000;
     float initial_temperature = 10'000;
-    float distance_penalty_multiplier = 10.;
     AnnealingAlgorithm algorithm(
             problem_description,
             problem_solution,
             n_iterations,
-            initial_temperature,
-            distance_penalty_multiplier);
+            initial_temperature);
 
     solve_problem(problem_description,
                   problem_solution,
                   problem_initialization,
                   algorithm);
+
+    const auto& history = algorithm.get_history();
+    std::cout << history[0][0] << " -> " << history[0][history[0].size() - 1];
 
     return 0;
 }

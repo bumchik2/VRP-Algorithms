@@ -10,7 +10,7 @@
 
 class SwapVertexMutation : public Mutation {
 public:
-    SwapVertexMutation(int random_seed): Mutation(random_seed) {}
+    explicit SwapVertexMutation(): Mutation() {}
 
     std::string get_name() const override {
         return "[Swap Vertex Mutation]";

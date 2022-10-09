@@ -11,12 +11,12 @@ set(CMAKE_CXX_STANDARD 14)
 #        )
 
 set(SOURCES
-        json/single_include/nlohmann/json.hpp
-        src/algorithms/annealing/penalties/distance_penalty.cpp
-        src/algorithms/annealing/penalties/penalty.cpp
+        src/problem/penalties/distance_penalty.cpp
+        src/problem/penalties/penalty.cpp
         src/algorithms/annealing/mutations/mutation.cpp
         src/algorithms/annealing/mutations/swap_vertex_mutation.cpp
         src/algorithms/annealing/annealing_algorithm.cpp
+        src/algorithms/iterative_algorithm.cpp
         src/algorithms/algorithm.cpp
         src/objects/courier.cpp
         src/objects/location.cpp
@@ -37,3 +37,6 @@ add_executable(VRP_Algorithms_main
 
 add_executable(VRP_Algorithms_test
         scripts/test.cpp)
+
+add_executable(VRP_Algorithms_test_includes
+        scripts/test_includes.cpp)

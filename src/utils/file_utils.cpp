@@ -90,7 +90,7 @@ ProblemDescription read_euclidean_problem(const std::string& test_data_folder) {
     DistanceMatrix distance_matrix(depots_to_locations_distances, locations_to_locations_distances);
     TimeMatrix time_matrix({}, {});
 
-    return {locations, couriers, depots, distance_matrix, time_matrix};
+    return {locations, couriers, depots, distance_matrix, time_matrix, 10};
 }
 
 std::unordered_map<std::string, Location> read_locations_from_json(const std::string& path_to_json) {

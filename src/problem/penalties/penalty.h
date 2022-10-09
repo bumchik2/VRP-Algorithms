@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include "../../../objects/route.h"
-#include "../../../problem/problem_description.h"
+#include "../../objects/route.h"
 
+#include <stdexcept>
 #include <vector>
 #include <string>
+
+class ProblemDescription;
 
 enum PenaltyType {
     // Penalty is evaluated for each route independently
@@ -20,12 +22,13 @@ enum PenaltyType {
 
 class Penalty {
 public:
-    Penalty(float penalty_multiplier, PenaltyType penalty_type):
-            _penalty_multiplier(penalty_multiplier), penalty_type(penalty_type) {}
+    Penalty(const ProblemDescription &problem_description, float penalty_multiplier, PenaltyType penalty_type) :
+            _penalty_multiplier(penalty_multiplier), penalty_type(penalty_type),
+            _problem_description(problem_description) {}
 
     virtual ~Penalty() = default;
 
-    virtual float get_penalty(const ProblemDescription& problem_description, const std::vector<Route>& routes) const {
+    virtual float get_penalty(const std::vector<Route> &routes) const {
         throw std::runtime_error("Calling get_penalty from base Penalty class");
     };
 
@@ -37,4 +40,5 @@ public:
 
 protected:
     float _penalty_multiplier;
+    const ProblemDescription &_problem_description;
 };

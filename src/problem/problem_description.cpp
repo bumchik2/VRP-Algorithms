@@ -3,3 +3,5 @@
 //
 
 #include "problem_description.h"
+#include "penalties/penalty.h"
+#include "penalties/distance_penalty.h"

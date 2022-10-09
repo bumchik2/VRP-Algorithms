@@ -8,7 +8,7 @@
 #include <vector>
 #include <iostream>
 
-std::vector<int> SwapVertexMutation::_choose_mutation_parameters_(const ProblemSolution& problem_solution) const {
+std::vector<int> SwapVertexMutation::_choose_mutation_parameters_(const ProblemSolution &problem_solution) const {
     _fix_random_seed();
     int route_number = -1, pos_1 = -1, pos_2 = -1;
     while (route_number == -1 || problem_solution.routes[route_number].location_ids.size() <= 2 || pos_1 >= pos_2) {
@@ -35,6 +35,6 @@ void SwapVertexMutation::mutate(ProblemSolution &problem_solution) const {
     int pos_1 = parameters[1];
     int pos_2 = parameters[2];
 
-    Route& route_to_modify = problem_solution.routes[route_number];
+    Route &route_to_modify = problem_solution.routes[route_number];
     std::swap(route_to_modify.location_ids[pos_1], route_to_modify.location_ids[pos_2]);
 }

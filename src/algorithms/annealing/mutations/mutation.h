@@ -8,27 +8,30 @@
 #include <vector>
 #include <memory>
 
-#include "../penalties/penalty.h"
+#include "../../../problem/penalties/penalty.h"
 #include "../../../problem/problem_solution.h"
 
 class Mutation {
 public:
-    explicit Mutation(int random_seed): _random_seed(random_seed) {}
+    explicit Mutation() = default;
+
+    void set_random_seed(int random_seed);
 
     virtual std::string get_name() const = 0;
 
-    virtual void mutate(ProblemSolution& problem_solution) const {};
-    virtual float get_delta_penalty(ProblemSolution &problem_solution,
-            const std::vector<std::shared_ptr<Penalty>> &penalties) const;
+    virtual void mutate(ProblemSolution &problem_solution) const {};
+
+    std::vector<float> get_delta_penalties(ProblemSolution &problem_solution,
+                                           const std::vector<std::shared_ptr<Penalty>> &penalties) const;
 
 private:
-    int _random_seed;
+    int _random_seed = -1;
 
-    virtual std::vector<int> _get_modified_routes_indices(const ProblemSolution& problem_solution) const = 0;
+    virtual std::vector<int> _get_modified_routes_indices(const ProblemSolution &problem_solution) const = 0;
 
-    static float _calculate_penalty_part(const ProblemSolution &problem_solution,
-                                         const std::vector<std::shared_ptr<Penalty>> &penalties,
-                                         const std::vector<int> &modified_routes_indices);
+    static std::vector<float> _calculate_penalty_part(const ProblemSolution &problem_solution,
+                                                      const std::vector<std::shared_ptr<Penalty>> &penalties,
+                                                      const std::vector<int> &modified_routes_indices);
 
 protected:
     void _fix_random_seed() const;
