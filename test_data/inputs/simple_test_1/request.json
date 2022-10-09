@@ -11,11 +11,11 @@
     {"id": "location 9", "depot_id": "depot 1", "point":{"lat": 48.6590881347656, "lon": 44.416202545166}, "time_window": "09:00:00-22:00:00"}
   ],
   "vehicles": [
-    {"id": "courier 1"},
-    {"id": "courier 2"}
+    {"id": "courier 1", "return_to_depot": false},
+    {"id": "courier 2", "return_to_depot": false}
   ],
   "depots": [
-    {"id": "depot 1", "point": {"lat": 48.799671, "lon": 44.604758}}
+    {"id": "depot 1", "point": {"lat": 48.799671, "lon": 44.604758}, "time_window": "09:00:00-22:00:00"}
   ],
   "options": {
     "time_zone": 3
