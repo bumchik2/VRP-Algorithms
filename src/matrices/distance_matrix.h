@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../objects/problem_objects.h"
+
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -24,3 +26,9 @@ private:
 
     static void _check_positive_distance(float distance) ;
 };
+
+double to_radians(double degree);
+
+float get_euclidean_distance(float lat1, float lon1, float lat2, float lon2);
+
+DistanceMatrix get_euclidean_distance_matrix(const ProblemObjects& problem_objects);

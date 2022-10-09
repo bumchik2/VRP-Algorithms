@@ -3,6 +3,7 @@
 //
 
 #include "iterative_algorithm.h"
+#include "../../tqdm/tqdm.h"
 
 void IterativeAlgorithm::_save_checkpoint(int step_number) {
     std::vector<float> penalty_values;
@@ -20,7 +21,7 @@ void IterativeAlgorithm::_save_checkpoint(int step_number) {
 }
 
 void IterativeAlgorithm::solve_problem() {
-    for (int step_number = 0; step_number < _n_iterations; ++step_number) {
+    for (auto step_number : tq::trange(_n_iterations)) {
         _make_step(step_number);
 
         if (step_number % (_checkpoints_number - 1) == 0) {

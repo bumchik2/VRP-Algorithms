@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
 
 class AnnealingAlgorithm : public IterativeAlgorithm {
 public:

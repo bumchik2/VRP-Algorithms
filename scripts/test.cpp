@@ -1,35 +1,11 @@
 #include <iostream>
+#include "../src/utils/time_utils.h"
 
 using std::cout;
 using std::endl;
 
-
-class A {
-public:
-    void f() {
-        g();
-    }
-
-    virtual void g() {
-        cout << "A";
-    }
-};
-
-class B : public A {
-public:
-    void g() override {
-        cout << "B";
-    }
-};
-
-
-void test() {
-    B b;
-    b.f();
-}
-
-
 int main() {
-    test();
+    const auto res = time_window_to_begin_seconds_end_seconds("02:15:47-2.14:50:00");
+    cout << res.first << ' ' << res.second << endl;
     return 0;
 }

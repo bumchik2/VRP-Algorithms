@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.16.3)
 project(VRP_Algorithms)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # not working for some reason
 #file(GLOB SOURCES
@@ -33,10 +33,10 @@ set(SOURCES
         src/utils/time_utils.cpp)
 
 add_executable(VRP_Algorithms_main
-        scripts/main.cpp json/single_include/nlohmann/json.hpp ${SOURCES})
+        scripts/main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
 
 add_executable(VRP_Algorithms_test
-        scripts/test.cpp)
+        scripts/test.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
 
 add_executable(VRP_Algorithms_test_includes
         scripts/test_includes.cpp)

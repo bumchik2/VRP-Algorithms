@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <iostream>
 
 
 struct CheckPoint {
@@ -35,7 +36,7 @@ public:
         throw std::runtime_error("virtual _make_step from class IterativeAlgorithm is called");
     };
 
-    const std::vector<std::vector<float>>& get_history() const {
+    [[nodiscard]] const std::vector<std::vector<float>>& get_history() const {
         return _penalty_history;
     }
 
