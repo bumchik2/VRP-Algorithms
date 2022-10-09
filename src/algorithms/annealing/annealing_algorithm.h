@@ -23,6 +23,9 @@ public:
             _penalties.push_back(std::make_shared<DistancePenalty>(distance_penalty_multiplier));
         }
     }
+
+    ~AnnealingAlgorithm() override = default;
+
     void solve_problem() override;
 
 private:
@@ -31,7 +34,7 @@ private:
     float _temperature;
 
     std::vector<std::shared_ptr<Penalty>> _penalties;
-    static std::vector<std::shared_ptr<Mutation>> _get_mutations(int step_number) ;
+    static std::vector<std::shared_ptr<Mutation>> _get_mutations(int step_number);
 
     static std::shared_ptr<Mutation> _choose_random_mutation(const std::vector<std::shared_ptr<Mutation>>& mutations) ;
     bool _try_to_apply_random_mutation(int step_number) const;

@@ -69,4 +69,5 @@ float Mutation::get_delta_penalty(ProblemSolution& problem_solution,
     for (const auto& route_index_to_route: old_routes) {
         problem_solution.routes[route_index_to_route.first] = route_index_to_route.second;
     }
+    return penalty_part_final - penalty_part_initial;
 }

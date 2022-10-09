@@ -11,8 +11,10 @@ void ProblemInitializationSimple::initialize(const ProblemDescription& problem_d
         problem_solution.routes.push_back(Route({{}, id_to_courier.first}));
     }
 
-    for (int i = 0; i < problem_description.locations.size(); ++i) {
-        const Location& location = problem_description.locations[i];
+    int i = 0;
+    for (const auto& location_id_to_location : problem_description.locations) {
+        const Location& location = location_id_to_location.second;
         problem_solution.routes[i % problem_description.couriers.size()].location_ids.push_back(location.id);
+        i += 0;
     }
 }

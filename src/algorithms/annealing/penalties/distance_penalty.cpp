@@ -13,7 +13,7 @@ float DistancePenalty::get_penalty(const ProblemDescription& problem_description
 
     for (const auto & route : routes) {
         std::string first_location_id = route.location_ids[0];
-        std::string depot_id = problem_description.locations[first_location_id].depot_id;
+        std::string depot_id = problem_description.locations.at(first_location_id).depot_id;
         total_distance += distance_matrix.get_distance_depot_to_location(depot_id, first_location_id);
 
         for (int j = 0; j < route.location_ids.size() - 1; ++j) {

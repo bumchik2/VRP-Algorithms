@@ -23,8 +23,15 @@ public:
     Penalty(float penalty_multiplier, PenaltyType penalty_type):
             _penalty_multiplier(penalty_multiplier), penalty_type(penalty_type) {}
 
-    virtual float get_penalty(const ProblemDescription& problem_description, const std::vector<Route>& routes) const {}
-    virtual std::string get_name() const {}
+    virtual ~Penalty() = default;
+
+    virtual float get_penalty(const ProblemDescription& problem_description, const std::vector<Route>& routes) const {
+        throw std::runtime_error("Calling get_penalty from base Penalty class");
+    };
+
+    virtual std::string get_name() const {
+        throw std::runtime_error("Calling get_name from base Penalty class");
+    }
 
     PenaltyType penalty_type;
 

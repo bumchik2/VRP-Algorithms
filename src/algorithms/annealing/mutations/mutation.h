@@ -13,9 +13,9 @@
 
 class Mutation {
 public:
-    Mutation(int random_seed): _random_seed(random_seed) {}
+    explicit Mutation(int random_seed): _random_seed(random_seed) {}
 
-    virtual std::string get_name() const {}
+    virtual std::string get_name() const = 0;
 
     virtual void mutate(ProblemSolution& problem_solution) const {};
     virtual float get_delta_penalty(ProblemSolution &problem_solution,
@@ -24,7 +24,7 @@ public:
 private:
     int _random_seed;
 
-    virtual std::vector<int> _get_modified_routes_indices(const ProblemSolution& problem_solution) const {};
+    virtual std::vector<int> _get_modified_routes_indices(const ProblemSolution& problem_solution) const = 0;
 
     static float _calculate_penalty_part(const ProblemSolution &problem_solution,
                                          const std::vector<std::shared_ptr<Penalty>> &penalties,

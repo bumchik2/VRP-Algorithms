@@ -11,7 +11,9 @@
 
 class DistancePenalty : public Penalty {
 public:
-    DistancePenalty(float penalty_multiplier): Penalty(penalty_multiplier, PER_ROUTE_PENALTY) {}
+    explicit DistancePenalty(float penalty_multiplier): Penalty(penalty_multiplier, PER_ROUTE_PENALTY) {}
+
+    ~DistancePenalty() override = default;
 
     float get_penalty(const ProblemDescription& problem_description, const std::vector<Route>& routes) const override;
 

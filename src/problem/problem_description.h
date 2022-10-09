@@ -14,10 +14,17 @@
 
 class ProblemDescription {
 public:
+    ProblemDescription(std::unordered_map<std::string, Location> locations,
+            std::unordered_map<std::string, Courier> couriers,
+            std::unordered_map<std::string, Depot> depots,
+            DistanceMatrix distance_matrix, TimeMatrix time_matrix):
+            locations(std::move(locations)), couriers(std::move(couriers)), depots(std::move(depots)),
+            distance_matrix(std::move(distance_matrix)), time_matrix(std::move(time_matrix)) {}
+
     const std::unordered_map<std::string, Location> locations;
     const std::unordered_map<std::string, Courier> couriers;
     const std::unordered_map<std::string, Depot> depots;
 
-    const TimeMatrix time_matrix;
     const DistanceMatrix distance_matrix;
+    const TimeMatrix time_matrix;
 };

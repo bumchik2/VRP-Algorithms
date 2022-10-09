@@ -6,6 +6,7 @@
 #include "../../../utils/random_utils.h"
 
 #include <vector>
+#include <iostream>
 
 std::vector<int> SwapVertexMutation::_choose_mutation_parameters_(const ProblemSolution& problem_solution) const {
     _fix_random_seed();

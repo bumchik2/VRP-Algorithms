@@ -12,7 +12,11 @@ public:
     Algorithm(const ProblemDescription& problem_description, ProblemSolution& problem_solution):
             _problem_description(problem_description), _problem_solution(problem_solution) {}
 
-    virtual void solve_problem() {};
+    virtual ~Algorithm() = default;
+
+    virtual void solve_problem() {
+        throw std::runtime_error("Calling solve_problem from Algorithm base class");
+    };
 
 protected:
     const ProblemDescription& _problem_description;

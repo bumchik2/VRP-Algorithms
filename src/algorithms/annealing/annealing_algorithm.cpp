@@ -7,6 +7,7 @@
 #include "../../utils/random_utils.h"
 
 #include <cmath>
+#include <iostream>
 
 std::vector<std::shared_ptr<Mutation>> AnnealingAlgorithm::_get_mutations(int step_number) {
     return {
