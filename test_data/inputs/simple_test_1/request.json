@@ -16,5 +16,8 @@
   ],
   "depots": [
     {"id": "depot 1", "point": {"lat": 48.799671, "lon": 44.604758}}
-  ]
+  ],
+  "options": {
+    "time_zone": 3
+  }
 }
