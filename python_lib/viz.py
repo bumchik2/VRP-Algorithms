@@ -42,11 +42,11 @@ def plot_map(request, ax=None):
 
     locations_lons = [location['point']['lon'] for location in request['locations']]
     locations_lats = [location['point']['lat'] for location in request['locations']]
-    ax.scatter(locations_lons, locations_lats, c='r', s=10)
+    ax.scatter(locations_lons, locations_lats, c='r', s=30)
 
     depots_lons = [depot['point']['lon'] for depot in request['depots']]
     depots_lats = [depot['point']['lat'] for depot in request['depots']]
-    ax.scatter(depots_lons, depots_lats, c='b', s=20, marker='*')
+    ax.scatter(depots_lons, depots_lats, c='b', s=50, marker='*')
 
     ax.grid(visible=True)
 
