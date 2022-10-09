@@ -17,14 +17,12 @@
 class AnnealingAlgorithm : public IterativeAlgorithm {
 public:
     AnnealingAlgorithm(const ProblemDescription &problem_description, ProblemSolution &problem_solution,
-                       int n_iterations, float initial_temperature) :
-            IterativeAlgorithm(problem_description, problem_solution, n_iterations),
+                       int n_iterations, float initial_temperature, int checkpoints_number=101) :
+            IterativeAlgorithm(problem_description, problem_solution, n_iterations, checkpoints_number),
             _initial_temperature(initial_temperature), _temperature(_initial_temperature),
             _mutations(_get_mutations()) {}
 
     ~AnnealingAlgorithm() override = default;
-
-    void solve_problem() override;
 
 private:
     float _initial_temperature;

@@ -61,9 +61,3 @@ void AnnealingAlgorithm::_make_step(int step_number) {
     _try_to_apply_random_mutation_and_update_penalties_history(step_number);
     _update_temperature(step_number);
 }
-
-void AnnealingAlgorithm::solve_problem() {
-    for (int step_number = 0; step_number < _n_iterations; ++step_number) {
-        _make_step(step_number);
-    }
-}

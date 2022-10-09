@@ -40,7 +40,12 @@ int main() {
                   algorithm);
 
     const auto& history = algorithm.get_history();
-    std::cout << history[0][0] << " -> " << history[0][history[0].size() - 1];
+    std::cout << "First penalty change: " << history[0][0] << " -> " << history[0][history[0].size() - 1];
+
+    // TODO: refactor reading files and getting eucledian problems
+    // TODO: save history and checkpoints somewhere
+    // TODO: очень хочется как-то поженить форматы настоящего солвера и моего, чтобы можно было и тут и там одинаковые запросы отправлять
+    // TODO: а что делать с различными депо и хочу ли я вообще несколько депо поддерживать?
 
     return 0;
 }
