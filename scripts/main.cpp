@@ -1,13 +1,15 @@
-#include <iostream>
-
 #include "../src/algorithms/algorithm.h"
 #include "../src/algorithms/annealing/annealing_algorithm.h"
 #include "../src/problem/problem_initialization/problem_initialization_simple.h"
+#include "../src/utils/files_utils.h"
+#include "../src/utils/random_utils.h"
 
+#include <iostream>
+#include <fstream>
 
 void solve_problem(
         const ProblemDescription& problem_description,
-        ProblemSolution problem_solution,
+        ProblemSolution& problem_solution,
         const ProblemInitialization& problem_initialization,
         Algorithm& algorithm) {
     problem_initialization.initialize(problem_description, problem_solution);
@@ -17,7 +19,10 @@ void solve_problem(
 
 
 int main() {
-    ProblemDescription problem_description;
+    fix_random_seed(42);
+
+    std::string test_data_folder = "test_data/simple_test_data/";
+    ProblemDescription problem_description = read_euclidean_problem(test_data_folder);
     ProblemSolution problem_solution(problem_description);
     ProblemInitializationSimple problem_initialization;
 
@@ -30,5 +35,11 @@ int main() {
             n_iterations,
             initial_temperature,
             distance_penalty_multiplier);
+
+    solve_problem(problem_description,
+                  problem_solution,
+                  problem_initialization,
+                  algorithm);
+
     return 0;
 }
