@@ -17,7 +17,7 @@ public:
 
     void set_random_seed(int random_seed);
 
-    virtual std::string get_name() const = 0;
+    [[nodiscard]] virtual std::string get_name() const = 0;
 
     virtual void mutate(ProblemSolution &problem_solution) const {};
 

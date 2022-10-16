@@ -37,7 +37,7 @@ std::vector<float> Mutation::_calculate_penalty_part(const ProblemSolution &prob
 }
 
 std::vector<float> Mutation::get_delta_penalties(ProblemSolution &problem_solution,
-                                               const std::vector<std::shared_ptr<Penalty>> &penalties) const {
+                                                 const std::vector<std::shared_ptr<Penalty>> &penalties) const {
     // If all the penalties are of kind PER_ROUTE_PENALTY, then only modified routes need to be saved
     bool need_to_save_all_the_routes = false;
     for (const auto &penalty: penalties) {
@@ -62,14 +62,14 @@ std::vector<float> Mutation::get_delta_penalties(ProblemSolution &problem_soluti
 
     // Calculate initial penalty
     std::vector<float> penalty_parts_initial = _calculate_penalty_part(problem_solution, penalties,
-                                                                      modified_routes_indices);
+                                                                       modified_routes_indices);
 
     // Mutate
     mutate(problem_solution);
 
     // Calculate delta penalty
     std::vector<float> penalty_parts_final = _calculate_penalty_part(problem_solution, penalties,
-                                                                    modified_routes_indices);
+                                                                     modified_routes_indices);
 
     // Restore the modified routes
     for (const auto &route_index_to_route: old_routes) {

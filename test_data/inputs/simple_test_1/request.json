@@ -15,7 +15,7 @@
     {"id": "courier 2", "return_to_depot": false}
   ],
   "depots": [
-    {"id": "depot 1", "point": {"lat": 48.799671, "lon": 44.604758}, "time_window": "09:00:00-22:00:00"}
+    {"id": "depot 1", "point": {"lat": 48.799671, "lon": 44.604758}, "time_window": "00:00:00-2.00:00:00"}
   ],
   "options": {
     "time_zone": 3

@@ -12,7 +12,7 @@ class SwapVertexMutation : public Mutation {
 public:
     explicit SwapVertexMutation(): Mutation() {}
 
-    std::string get_name() const override {
+    [[nodiscard]] std::string get_name() const override {
         return "[Swap Vertex Mutation]";
     }
 
@@ -20,6 +20,6 @@ public:
 
 private:
 
-    std::vector<int> _choose_mutation_parameters_(const ProblemSolution& problem_solution) const;
-    std::vector<int> _get_modified_routes_indices(const ProblemSolution &problem_solution) const override;
+    [[nodiscard]] std::vector<int> _choose_mutation_parameters_(const ProblemSolution& problem_solution) const;
+    [[nodiscard]] std::vector<int> _get_modified_routes_indices(const ProblemSolution &problem_solution) const override;
 };

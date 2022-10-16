@@ -32,7 +32,7 @@ std::string DatetimeObject::to_string() const {
         D = int_to_string(days) + ".";
     }
 
-    return D + hh + mm + ss;
+    return D + hh + ":" + mm + ":" + ss;
 }
 
 DatetimeObject parse_datetime_string(const std::string& datetime_string) {

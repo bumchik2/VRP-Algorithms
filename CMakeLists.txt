@@ -8,6 +8,7 @@ set(SOURCES
         src/problem/penalties/penalty.cpp
         src/algorithms/annealing/mutations/mutation.cpp
         src/algorithms/annealing/mutations/swap_vertex_mutation.cpp
+        src/algorithms/annealing/mutations/transfer_mutation.cpp
         src/algorithms/annealing/annealing_algorithm.cpp
         src/algorithms/iterative_algorithm.cpp
         src/algorithms/algorithm.cpp
@@ -26,11 +27,12 @@ set(SOURCES
         src/utils/random_utils.cpp
         src/utils/time_utils.cpp)
 
+add_subdirectory(google_tests)
+
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+add_executable(run_google_tests scripts/test.cpp ${SOURCES})
+target_link_libraries(run_google_tests gtest gtest_main)
+
 add_executable(VRP_Algorithms_main
         scripts/main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
-
-add_executable(VRP_Algorithms_test
-        scripts/test.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
-
-add_executable(VRP_Algorithms_test_includes
-        scripts/test_includes.cpp)

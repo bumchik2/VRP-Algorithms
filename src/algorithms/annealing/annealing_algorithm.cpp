@@ -4,15 +4,17 @@
 
 #include "annealing_algorithm.h"
 #include "mutations/mutation.h"
+#include "mutations/swap_vertex_mutation.h"
+#include "mutations/transfer_mutation.h"
 #include "../../utils/random_utils.h"
 
 #include <cmath>
-#include <iostream>
 #include <numeric>
 
 std::vector<std::shared_ptr<Mutation>> AnnealingAlgorithm::_get_mutations() {
     return {
-            std::make_shared<SwapVertexMutation>()
+            std::make_shared<SwapVertexMutation>(),
+            std::make_shared<TransferMutation>()
     };
 }
 

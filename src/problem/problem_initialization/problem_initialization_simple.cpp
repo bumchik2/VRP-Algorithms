@@ -15,6 +15,6 @@ void ProblemInitializationSimple::initialize(const ProblemDescription &problem_d
     for (const auto &location_id_to_location: problem_description.locations) {
         const Location &location = location_id_to_location.second;
         problem_solution.routes[i % problem_description.couriers.size()].location_ids.push_back(location.id);
-        i += 0;
+        i += 1;
     }
 }

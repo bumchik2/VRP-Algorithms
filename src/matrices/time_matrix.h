@@ -21,6 +21,6 @@ private:
     std::unordered_map<std::string, std::unordered_map<std::string, float>> _depots_to_locations_travel_times;
     std::unordered_map<std::string, std::unordered_map<std::string, float>> _locations_to_locations_travel_times;
 
-    static void _check_positive_travel_time(float travel_time) ;
+    static void _check_positive_travel_time(const std::string& from_id, const std::string& to_id, float travel_time);
 };
 

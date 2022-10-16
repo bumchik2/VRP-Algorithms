@@ -24,7 +24,7 @@ int main() {
     ProblemInitializationSimple problem_initialization;
     problem_initialization.initialize(problem_description, problem_solution);
 
-    int n_iterations = 100'000;
+    int n_iterations = 1000'000;
     float initial_temperature = 10'000;
     AnnealingAlgorithm algorithm(
             problem_description,
@@ -38,18 +38,18 @@ int main() {
     std::cout << std::endl << "First penalty change: " << penalty_history[0][0] << " -> "
               << penalty_history[0][penalty_history[0].size() - 1];
 
-    algorithm.save_checkpoints("test_data/results/annealing/simple_test_1/checkpoints_1.json");
-    algorithm.save_penalty_history("test_data/results/annealing/simple_test_1/penalty_history_1.json");
+    algorithm.save_checkpoints("test_data/results/annealing/simple_test_1/1000000_iterations_checkpoints_1.json");
+    algorithm.save_penalty_history("test_data/results/annealing/simple_test_1/1000000_iterations_penalty_history_1.json");
 
     // TODO: делать сравнение на более сложных задачах
-    // TODO: возможно, стоит заменить вектор из penalty на unordered_map из penalty?
-    // TODO наверное нужно как-то разделить file_utils
     // TODO: добавить тесты на всякие утили хотя бы
-    // TODO: добавить визуализацию чекпоинтов (обновляющиеся маршруты) и добавить графики для penalty
-    // TODO: а что делать с различными депо и хочу ли я вообще несколько депо поддерживать?
-    // TODO: добавить больше мутаций
-    // TODO: добавить больше penalty? (но это с низким приоритетом задача)
-    // TODO: документация к питоновским функциям
+    // TODO: добавить penalty за балансировку маршрутов
+    // TODO: добавить penalty за нарушение окон доставки (для этого нужно как-то скачивать / генерировать матрицы расстояний - как?)
+
+    // TODO наверное нужно как-то разделить file_utils (низкий приоритет)
+    // TODO: документация к питоновским функциям (низкий приоритет)
+    // TODO: добавить больше мутаций (низкий приоритет)
+    // TODO: возможно, стоит заменить вектор из penalty на unordered_map из penalty? (низкий приоритет)
 
     return 0;
 }

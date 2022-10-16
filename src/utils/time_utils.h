@@ -12,7 +12,7 @@ struct DatetimeObject {
     int minutes;
     int seconds;
 
-    std::string to_string() const;
+    [[nodiscard]] std::string to_string() const;
 };
 
 std::string seconds_to_datetime_string(int seconds);

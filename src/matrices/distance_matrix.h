@@ -24,7 +24,7 @@ private:
     std::unordered_map<std::string, std::unordered_map<std::string, float>> _depots_to_locations_distances;
     std::unordered_map<std::string, std::unordered_map<std::string, float>> _locations_to_locations_distances;
 
-    static void _check_positive_distance(float distance) ;
+    static void _check_positive_distance(const std::string& from_id, const std::string& to_id, float distance);
 };
 
 double to_radians(double degree);
