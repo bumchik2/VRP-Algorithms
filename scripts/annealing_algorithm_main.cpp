@@ -41,6 +41,10 @@ int main() {
     algorithm.save_checkpoints("test_data/results/annealing/simple_test_1/1000000_iterations_checkpoints_1.json");
     algorithm.save_penalty_history("test_data/results/annealing/simple_test_1/1000000_iterations_penalty_history_1.json");
 
+    // TODO: добавить жадный алгоритм в c++ код (сейчас он только в ноутбуке clusterization)
+    // TODO: сделать какой-то более общий формат сохранения результатов алгоритма: типа в конце работы каждого алгоритма
+    //  должна быть возможность сохранить penalty breakdown и маршруты (чекпоинты и penalty_history - это только для итеративных алгоритмов)
+
     // TODO: делать сравнение на более сложных задачах
     // TODO: добавить тесты на всякие утили хотя бы
     // TODO: добавить penalty за балансировку маршрутов

@@ -34,5 +34,13 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 add_executable(run_google_tests scripts/test.cpp ${SOURCES})
 target_link_libraries(run_google_tests gtest gtest_main)
 
-add_executable(VRP_Algorithms_main
-        scripts/main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
+
+add_executable(VRP_Algorithms_greedy_algorithm_main
+        scripts/greedy_algorithm_main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
+
+target_link_libraries(VRP_Algorithms_greedy_algorithm_main ${PYTHON_LIBRARIES})
+
+add_executable(VRP_Algorithms_annealing_algorithm_main
+        scripts/annealing_algorithm_main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
