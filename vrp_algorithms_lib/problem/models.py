@@ -1,16 +1,22 @@
-from pydantic import BaseModel
 from typing import Dict
 from typing import NewType
+from typing import List
+
+from pydantic import BaseModel
 
 LocationId = NewType('LocationId', str)
 DepotId = NewType('DepotId', str)
 CourierId = NewType('CourierId', str)
 
 
-class Depot(BaseModel):
-    id: DepotId
+class Point(BaseModel):
     lat: float
     lon: float
+
+
+class Depot(BaseModel):
+    id: DepotId
+    point: Point
 
 
 class Courier(BaseModel):
@@ -20,8 +26,7 @@ class Courier(BaseModel):
 class Location(BaseModel):
     id: LocationId
     depot_id: str
-    lat: float
-    lon: float
+    point: Point
     time_window_start_s: float
     time_window_end_s: float
 
@@ -47,3 +52,12 @@ class ProblemDescription(BaseModel):
     distance_matrix: DistanceMatrix
     time_matrix: TimeMatrix
     penalties: PenaltyMultipliers
+
+
+class Route(BaseModel):
+    vehicle_id: str
+    location_ids: List[str]
+
+
+class Routes(BaseModel):
+    routes: List[Route]
