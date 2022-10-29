@@ -7,7 +7,9 @@
 void to_json(nlohmann::json &j, const Depot &depot) {
     j = {
             {"id",    depot.id},
-            {"lat", depot.lat},
-            {"lon", depot.lon},
+            {"point", {
+                              {"lat", depot.lat},
+                              {"lon", depot.lon},
+                      }}
     };
 }

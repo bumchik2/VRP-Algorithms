@@ -14,11 +14,13 @@ std::string Location::get_time_window_str() const {
 
 void to_json(nlohmann::json &j, const Location &location) {
     j = {
-            {"id",                  location.id},
-            {"depot_id",            location.depot_id},
-            {"lat",                 location.lat},
-            {"lon",                 location.lon},
+            {"id", location.id},
+            {"depot_id", location.depot_id},
+            {"point", {
+                              {"lat", location.lat},
+                    {"lon", location.lon},
+            }},
             {"time_window_start_s", location.time_window_start_s},
-            {"time_window_end_s",   location.time_window_end_s}
+            {"time_window_end_s", location.time_window_end_s}
     };
 }

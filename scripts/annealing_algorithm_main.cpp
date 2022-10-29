@@ -20,7 +20,7 @@ int main() {
     fix_random_seed(42);
     set_working_directory_to_project_root();
 
-    const std::string test_name = "simple_test_1";
+    const std::string test_name = "medium_test_1";
     std::string test_request_path = "test_data/inputs/" + test_name + "/request.json";
     ProblemDescription problem_description = read_euclidean_problem(test_request_path);
     ProblemSolution problem_solution(problem_description);
@@ -48,6 +48,9 @@ int main() {
     // TODO: делать сравнение на более сложных задачах
     // TODO: добавить penalty за балансировку маршрутов
     // TODO: добавить penalty за нарушение окон доставки (для этого нужно как-то скачивать / генерировать матрицы расстояний - как?)
+    // TODO: нужно написать питоновский класс / функцию для вычисления Penalty (и соответствующую pydantic модель добавить)
+
+    // TODO: перевести viz на pydantic модели (пониженный приоритет)
 
     // TODO наверное нужно как-то разделить file_utils (низкий приоритет)
     // TODO: документация к питоновским функциям (низкий приоритет)
