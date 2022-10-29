@@ -3,3 +3,9 @@
 //
 
 #include "courier.h"
+
+void to_json(nlohmann::json &j, const Courier &courier) {
+    j = {
+            {"id", courier.id}
+    };
+}

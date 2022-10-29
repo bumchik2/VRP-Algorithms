@@ -44,3 +44,6 @@ target_link_libraries(VRP_Algorithms_greedy_algorithm_main ${PYTHON_LIBRARIES})
 
 add_executable(VRP_Algorithms_annealing_algorithm_main
         scripts/annealing_algorithm_main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
+
+add_executable(VRP_Algorithms_save_problem_description_to_json
+        scripts/save_problem_description_to_json.cpp json/single_include/nlohmann/json.hpp ${SOURCES})

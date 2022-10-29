@@ -22,3 +22,10 @@ float TimeMatrix::get_travel_time_location_to_location(const std::string& locati
     float result = _locations_to_locations_travel_times.at(location_id_1).at(location_id_2);
     return result;
 }
+
+void to_json(nlohmann::json &j, const TimeMatrix &time_matrix) {
+    j = {
+            {"depots_to_locations_travel_times", time_matrix._depots_to_locations_travel_times},
+            {"locations_to_locations_travel_times", time_matrix._locations_to_locations_travel_times},
+    };
+}

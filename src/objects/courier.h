@@ -5,6 +5,8 @@
 #pragma once
 
 #include <string>
+#include "../../json/single_include/nlohmann/json.hpp"
+
 
 class Courier {
 public:
@@ -13,3 +15,5 @@ public:
 
     std::string id;
 };
+
+void to_json(nlohmann::json &j, const Courier& courier);

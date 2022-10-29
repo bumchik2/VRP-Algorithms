@@ -61,3 +61,5 @@ private:
     std::vector<CheckPoint> _checkpoints;
     void _make_checkpoint(int step_number);
 };
+
+void print_penalty_changes(const ProblemDescription& problem_description, const IterativeAlgorithm& iterative_algorithm);

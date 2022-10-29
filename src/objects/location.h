@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include "../../json/single_include/nlohmann/json.hpp"
 
 class Location {
 public:
@@ -21,5 +22,7 @@ public:
     float time_window_start_s;
     float time_window_end_s;
 
-    std::string get_time_window_str() const;
+    [[nodiscard]] std::string get_time_window_str() const;
 };
+
+void to_json(nlohmann::json &j, const Location &location);

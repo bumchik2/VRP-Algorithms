@@ -18,6 +18,9 @@ public:
         throw std::runtime_error("Calling solve_problem from Algorithm base class");
     };
 
+    void save_penalty(const std::string& filename);
+    void save_routes(const std::string& filename);
+
 protected:
     const ProblemDescription& _problem_description;
     ProblemSolution& _problem_solution;

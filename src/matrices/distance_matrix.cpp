@@ -33,6 +33,10 @@ double to_radians(double degree) {
 }
 
 float get_euclidean_distance(float lat1, float lon1, float lat2, float lon2) {
+    if (lat1 == lat2 and lon1 == lon2) {
+        return 0;
+    }
+
     double dist;
     dist = sin(to_radians(lat1)) * sin(to_radians(lat2)) +
            cos(to_radians(lat1)) * cos(to_radians(lat2)) * cos(to_radians(lon1 - lon2));
@@ -64,4 +68,11 @@ DistanceMatrix get_euclidean_distance_matrix(const ProblemObjects &problem_objec
     }
 
     return {depots_to_locations_distances, locations_to_locations_distances};
+}
+
+void to_json(nlohmann::json &j, const DistanceMatrix &distance_matrix) {
+    j = {
+            {"depots_to_locations_distances", distance_matrix._depots_to_locations_distances},
+            {"locations_to_locations_distances", distance_matrix._locations_to_locations_distances},
+    };
 }

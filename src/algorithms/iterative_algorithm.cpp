@@ -65,3 +65,14 @@ void IterativeAlgorithm::save_checkpoints(const std::string &filename) const {
     nlohmann::json json_to_save = _checkpoints;
     save_json(json_to_save, filename);
 }
+
+void print_penalty_changes(const ProblemDescription& problem_description, const IterativeAlgorithm& iterative_algorithm) {
+    const auto &penalty_history = iterative_algorithm.get_penalty_history();
+    for (int i = 0; i < penalty_history.size(); ++i) {
+        const auto& penalty = problem_description.penalties[i];
+        const std::string& penalty_name = penalty->get_short_name();
+        float initial_value = penalty_history[i][0];
+        float final_value = penalty_history[i][penalty_history[i].size() - 1];
+        std::cout << std::endl << penalty_name + " change: " << initial_value << " -> " << final_value;
+    }
+}

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../objects/problem_objects.h"
+#include "../../json/single_include/nlohmann/json.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -25,6 +26,8 @@ private:
     std::unordered_map<std::string, std::unordered_map<std::string, float>> _locations_to_locations_distances;
 
     static void _check_positive_distance(const std::string& from_id, const std::string& to_id, float distance);
+
+    friend void to_json(nlohmann::json &j, const DistanceMatrix &distance_matrix);
 };
 
 double to_radians(double degree);
@@ -32,3 +35,5 @@ double to_radians(double degree);
 float get_euclidean_distance(float lat1, float lon1, float lat2, float lon2);
 
 DistanceMatrix get_euclidean_distance_matrix(const ProblemObjects& problem_objects);
+
+void to_json(nlohmann::json &j, const DistanceMatrix &distance_matrix);

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include "../../json/single_include/nlohmann/json.hpp"
 
 class Depot {
 public:
@@ -15,3 +16,5 @@ public:
     float lat = -1.;
     float lon = -1.;
 };
+
+void to_json(nlohmann::json &j, const Depot &depot);
