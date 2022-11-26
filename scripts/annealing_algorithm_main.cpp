@@ -20,14 +20,14 @@ int main() {
     fix_random_seed(42);
     set_working_directory_to_project_root();
 
-    const std::string test_name = "large_test_2";
+    const std::string test_name = "simple_test_1";
     std::string test_request_path = "test_data/inputs/" + test_name + "/request.json";
     ProblemDescription problem_description = read_euclidean_problem(test_request_path);
     ProblemSolution problem_solution(problem_description);
     ProblemInitializationSimple problem_initialization;
     problem_initialization.initialize(problem_description, problem_solution);
 
-    int n_iterations = 30'000'000;
+    int n_iterations = 100'000;
     float initial_temperature = 10'000;
     AnnealingAlgorithm algorithm(
             problem_description,
