@@ -18,7 +18,7 @@ int main() {
     fix_random_seed(42);
     set_working_directory_to_project_root();
 
-    const std::string test_name = "medium_test_1";
+    const std::string test_name = "large_test_2";
     const std::string inputs_folder = "test_data/inputs/";
     std::string test_request_path = inputs_folder + test_name + "/request.json";
     ProblemDescription problem_description = read_euclidean_problem(test_request_path);

@@ -6,6 +6,6 @@ def read_json(json_filename):
         return json.loads(f.read())
 
 
-def save_json(json_object, json_filename):
+def save_json(json_object, json_filename, indent=4):
     with open(json_filename, 'w') as f:
-        json.dump(json_object, f)
+        json.dump(json_object, f, indent=indent)

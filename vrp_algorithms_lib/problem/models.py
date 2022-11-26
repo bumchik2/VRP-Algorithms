@@ -55,8 +55,8 @@ class ProblemDescription(BaseModel):
 
 
 class Route(BaseModel):
-    vehicle_id: str
-    location_ids: List[str]
+    vehicle_id: CourierId
+    location_ids: List[LocationId]
 
 
 class Routes(BaseModel):

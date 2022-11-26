@@ -8,7 +8,7 @@ def get_location_id_to_location(request):
     return {location['id']: location for location in request['locations']}
 
 
-def plot_route(request, route, ax=None):
+def plot_route(request, route, ax=None, legend=True):
     if ax is None:
         ax = plt.gca()
 
@@ -28,10 +28,12 @@ def plot_route(request, route, ax=None):
     depot_lat = depot['point']['lat']
 
     ax.plot([depot_lon] + lons, [depot_lat] + lats, label=route['vehicle_id'])
-    ax.legend()
+
+    if legend:
+        ax.legend()
 
 
-def plot_map(request, ax=None):
+def plot_map(request, ax=None, legend=True):
     need_to_show = (ax is None)
     if ax is None:
         plt.figure(figsize=(12, 8))
@@ -49,26 +51,27 @@ def plot_map(request, ax=None):
     ax.scatter(depots_lons, depots_lats, c='b', s=100, marker='*', label='depots')
 
     ax.grid(visible=True)
-    ax.legend()
+
+    if legend:
+        ax.legend()
 
     if need_to_show:
         plt.show()
 
 
-def plot_routes(request, routes, title='', ax=None):
+def plot_routes(request, routes, title='', ax=None, legend=True):
     need_to_show = (ax is None)
     if ax is None:
         plt.figure(figsize=(12, 8))
         ax = plt.gca()
 
-    plot_map(request, ax)
+    plot_map(request, ax, legend=legend)
 
     ax.set_title(title, fontsize=16)
 
     for route in routes:
-        plot_route(request, route, ax)
+        plot_route(request, route, ax, legend=legend)
 
-    ax.legend()
     if need_to_show:
         plt.show()
 
@@ -100,7 +103,7 @@ def plot_penalty_history(penalty_history, skip_first_n=0, title='', ax=None):
         plt.show()
 
 
-def plot_checkpoints(request, checkpoints):
+def plot_checkpoints(request, checkpoints, legend=True):
     penalty_history_part = defaultdict(list)
 
     for i, checkpoint in enumerate(checkpoints):
@@ -113,7 +116,7 @@ def plot_checkpoints(request, checkpoints):
         for penalty_type in checkpoint['penalty_values']:
             penalty_history_part[penalty_type].append(checkpoint['penalty_values'][penalty_type])
 
-        plot_routes(request, checkpoint['routes'], ax=axes[0])
-        plot_penalty_history(penalty_history_part, ax=axes[1])
+        plot_routes(request, checkpoint['routes'], ax=axes[0], legend=legend)
+        plot_penalty_history(penalty_history_part, ax=axes[1], legend=legend)
 
         plt.show()
