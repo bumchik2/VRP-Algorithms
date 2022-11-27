@@ -13,7 +13,6 @@ def plot_route(request, route, ax=None, legend=True):
         ax = plt.gca()
 
     if len(route['location_ids']) == 0:
-        ax.plot([], [], label=route['vehicle_id'])
         return
 
     location_id_to_location = get_location_id_to_location(request)
@@ -76,7 +75,7 @@ def plot_routes(request, routes, title='', ax=None, legend=True):
         plt.show()
 
 
-def plot_penalty_history(penalty_history, skip_first_n=0, title='', ax=None):
+def plot_penalty_history(penalty_history, skip_first_n=0, title='', ax=None, legend=True):
     need_to_show = (ax is None)
     if ax is None:
         plt.figure(figsize=(12, 8))
@@ -97,7 +96,9 @@ def plot_penalty_history(penalty_history, skip_first_n=0, title='', ax=None):
     ax.set_ylabel('Penalty value', fontsize=14)
 
     ax.grid(visible=True)
-    ax.legend(fontsize='x-large')
+
+    if legend:
+        ax.legend(fontsize='x-large')
 
     if need_to_show:
         plt.show()
