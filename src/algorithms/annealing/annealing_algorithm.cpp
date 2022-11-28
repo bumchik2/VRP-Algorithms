@@ -43,7 +43,7 @@ bool AnnealingAlgorithm::_try_to_apply_random_mutation_and_update_penalties_hist
         mutation->mutate(_problem_solution);
     }
 
-    for (int i = 0; i < _problem_description.penalties.size(); ++i) {
+    for (int i = 0; i < _problem_description.penalties.penalties.size(); ++i) {
         float old_penalty_value = _penalty_history[i][_penalty_history[i].size() - 1];
         float delta_penalty_part = 0;
         if (need_to_apply_mutation) {

@@ -12,9 +12,12 @@
 
 #include "penalties/penalty.h"
 #include "penalties/distance_penalty.h"
+#include "penalties/global_proximity_penalty.h"
+#include "penalties/penalties.h"
 
 #include <unordered_map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 class ProblemDescription {
@@ -22,14 +25,11 @@ public:
     ProblemDescription(std::unordered_map<std::string, Location> locations,
                        std::unordered_map<std::string, Courier> couriers,
                        std::unordered_map<std::string, Depot> depots,
-                       DistanceMatrix distance_matrix, TimeMatrix time_matrix, float distance_penalty_multiplier) :
+                       DistanceMatrix distance_matrix, TimeMatrix time_matrix,
+                       Penalties penalties) :
             locations(std::move(locations)), couriers(std::move(couriers)), depots(std::move(depots)),
             distance_matrix(std::move(distance_matrix)), time_matrix(std::move(time_matrix)),
-            _distance_penalty_multiplier(distance_penalty_multiplier) {
-        if (distance_penalty_multiplier > 0) {
-            penalties.push_back(std::make_shared<DistancePenalty>(*this,distance_penalty_multiplier));
-        }
-
+            penalties(std::move(penalties)) {
     }
 
     const std::unordered_map<std::string, Location> locations;
@@ -39,14 +39,12 @@ public:
     const DistanceMatrix distance_matrix;
     const TimeMatrix time_matrix;
 
-    std::vector<std::shared_ptr<Penalty>> penalties{};
+    const Penalties penalties;
 
 private:
-    const float _distance_penalty_multiplier;
-
     friend void to_json(nlohmann::json &j, const ProblemDescription &problem_description);
 };
 
 void to_json(nlohmann::json &j, const ProblemDescription &problem_description);
 
-void save_problem_description_to_json(const ProblemDescription& problem_description, const std::string& filename);
+void save_problem_description_to_json(const ProblemDescription &problem_description, const std::string &filename);

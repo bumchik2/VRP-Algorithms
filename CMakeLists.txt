@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
         src/problem/penalties/distance_penalty.cpp
+        src/problem/penalties/global_proximity_penalty.cpp
         src/problem/penalties/penalty.cpp
+        src/problem/penalties/penalties.cpp
         src/algorithms/annealing/mutations/mutation.cpp
         src/algorithms/annealing/mutations/swap_vertex_mutation.cpp
         src/algorithms/annealing/mutations/transfer_mutation.cpp
@@ -36,11 +38,6 @@ target_link_libraries(run_google_tests gtest gtest_main)
 
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
-
-add_executable(VRP_Algorithms_greedy_algorithm_main
-        scripts/greedy_algorithm_main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
-
-target_link_libraries(VRP_Algorithms_greedy_algorithm_main ${PYTHON_LIBRARIES})
 
 add_executable(VRP_Algorithms_annealing_algorithm_main
         scripts/annealing_algorithm_main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})

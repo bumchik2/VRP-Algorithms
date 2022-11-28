@@ -29,10 +29,10 @@ public:
                        int n_iterations, int check_points_number=101) : Algorithm(problem_description, problem_solution),
                                            _n_iterations(n_iterations), _checkpoints_number(check_points_number) {
         // initialize penalty history
-        _penalty_history.resize(problem_description.penalties.size());
-        for (int i = 0; i < problem_description.penalties.size(); ++i) {
-            const std::shared_ptr<Penalty> penalty_ptr = problem_description.penalties[i];
-            _penalty_history[i].push_back(penalty_ptr->get_penalty(problem_solution.routes));
+        _penalty_history.resize(problem_description.penalties.penalties.size());
+        for (int i = 0; i < problem_description.penalties.penalties.size(); ++i) {
+            const std::shared_ptr<Penalty> penalty_ptr = problem_description.penalties.penalties[i];
+            _penalty_history[i].push_back(penalty_ptr->get_penalty(problem_description, problem_solution.routes));
         }
     }
 

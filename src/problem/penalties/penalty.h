@@ -22,13 +22,12 @@ enum PenaltyType {
 
 class Penalty {
 public:
-    Penalty(const ProblemDescription &problem_description, float penalty_multiplier, PenaltyType penalty_type) :
-            _penalty_multiplier(penalty_multiplier), penalty_type(penalty_type),
-            _problem_description(problem_description) {}
+    Penalty(float penalty_multiplier, PenaltyType penalty_type) :
+            _penalty_multiplier(penalty_multiplier), penalty_type(penalty_type) {}
 
     virtual ~Penalty() = default;
 
-    virtual float get_penalty(const std::vector<Route> &routes) const {
+    [[nodiscard]] virtual float get_penalty(const ProblemDescription &problem_description, const std::vector<Route> &routes) const {
         throw std::runtime_error("Calling get_penalty from base Penalty class");
     };
 
@@ -44,5 +43,4 @@ public:
 
 protected:
     float _penalty_multiplier;
-    const ProblemDescription &_problem_description;
 };

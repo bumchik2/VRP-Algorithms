@@ -32,7 +32,7 @@ double to_radians(double degree) {
     return degree / 180 * 3.14159265358979323846;
 }
 
-float get_euclidean_distance(float lat1, float lon1, float lat2, float lon2) {
+float get_euclidean_distance_km(float lat1, float lon1, float lat2, float lon2) {
     if (lat1 == lat2 and lon1 == lon2) {
         return 0;
     }
@@ -41,7 +41,7 @@ float get_euclidean_distance(float lat1, float lon1, float lat2, float lon2) {
     dist = sin(to_radians(lat1)) * sin(to_radians(lat2)) +
            cos(to_radians(lat1)) * cos(to_radians(lat2)) * cos(to_radians(lon1 - lon2));
     dist = acos(dist);
-    dist = 6371 * 1000 * dist;
+    dist = 6371 * dist;
     return static_cast<float>(dist);
 }
 
@@ -53,7 +53,7 @@ DistanceMatrix get_euclidean_distance_matrix(const ProblemObjects &problem_objec
         for (const auto &location_id_to_location: problem_objects.locations) {
             const Depot &depot = depot_id_to_depot.second;
             const Location &location = location_id_to_location.second;
-            auto distance = get_euclidean_distance(depot.lat, depot.lon, location.lat, location.lon);
+            auto distance = get_euclidean_distance_km(depot.lat, depot.lon, location.lat, location.lon);
             depots_to_locations_distances[depot.id][location.id] = distance;
         }
     }
@@ -62,7 +62,7 @@ DistanceMatrix get_euclidean_distance_matrix(const ProblemObjects &problem_objec
         for (const auto &location_id_to_location2: problem_objects.locations) {
             const Location &location_1 = location_id_to_location1.second;
             const Location &location_2 = location_id_to_location2.second;
-            auto distance = get_euclidean_distance(location_1.lat, location_1.lon, location_2.lat, location_2.lon);
+            auto distance = get_euclidean_distance_km(location_1.lat, location_1.lon, location_2.lat, location_2.lon);
             locations_to_locations_distances[location_1.id][location_2.id] = distance;
         }
     }

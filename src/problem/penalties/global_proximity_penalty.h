@@ -1,5 +1,5 @@
 //
-// Created by eliseysudakov on 10/2/22.
+// Created by eliseysudakov on 11/28/22.
 //
 
 #pragma once
@@ -9,20 +9,20 @@
 
 #include <string>
 
-class DistancePenalty : public Penalty {
+class GlobalProximityPenalty : public Penalty {
 public:
-    explicit DistancePenalty(float penalty_multiplier) :
+    explicit GlobalProximityPenalty(float penalty_multiplier) :
             Penalty(penalty_multiplier, PER_ROUTE_PENALTY) {}
 
-    ~DistancePenalty() override = default;
+    ~GlobalProximityPenalty() override = default;
 
     [[nodiscard]] float get_penalty(const ProblemDescription &problem_description, const std::vector<Route> &routes) const override;
 
     [[nodiscard]] std::string get_short_name() const override {
-        return "distance-penalty";
+        return "global-proximity-penalty";
     }
 
     [[nodiscard]] std::string get_name() const override {
-        return "[Distance penalty with multiplier " + float_to_string(_penalty_multiplier, 2) + "]";
+        return "[Global proximity penalty with multiplier " + float_to_string(_penalty_multiplier, 2) + "]";
     }
 };

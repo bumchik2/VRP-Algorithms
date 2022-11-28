@@ -5,8 +5,6 @@
 #include "mutation.h"
 #include "../../../utils/random_utils.h"
 
-#include <numeric>
-
 void Mutation::set_random_seed(int random_seed) {
     _random_seed = random_seed;
 }
@@ -16,7 +14,7 @@ void Mutation::_fix_random_seed() const {
 }
 
 std::vector<float> Mutation::_calculate_penalty_part(const ProblemSolution &problem_solution,
-                                                     const std::vector<std::shared_ptr<Penalty>> &penalties,
+                                                     const Penalties &penalties,
                                                      const std::vector<int> &modified_routes_indices) {
     std::vector<float> penalty_part;
     std::vector<Route> modified_routes;
@@ -24,11 +22,12 @@ std::vector<float> Mutation::_calculate_penalty_part(const ProblemSolution &prob
         modified_routes.push_back(problem_solution.routes[modified_route_index]);
     }
 
-    for (const auto &penalty: penalties) {
+    for (const auto &penalty: penalties.penalties) {
         if (penalty->penalty_type == PER_ROUTE_PENALTY) {
-            penalty_part.push_back(penalty->get_penalty(modified_routes));
+            penalty_part.push_back(penalty->get_penalty(problem_solution.get_problem_description(), modified_routes));
         } else if (penalty->penalty_type == PER_PROBLEM_PENALTY) {
-            penalty_part.push_back(penalty->get_penalty(problem_solution.routes));
+            penalty_part.push_back(
+                    penalty->get_penalty(problem_solution.get_problem_description(), problem_solution.routes));
         } else {
             throw std::runtime_error("Unsupported penalty type in _calculate_penalty_part");
         }
@@ -37,10 +36,10 @@ std::vector<float> Mutation::_calculate_penalty_part(const ProblemSolution &prob
 }
 
 std::vector<float> Mutation::get_delta_penalties(ProblemSolution &problem_solution,
-                                                 const std::vector<std::shared_ptr<Penalty>> &penalties) const {
+                                                 const Penalties &penalties) const {
     // If all the penalties are of kind PER_ROUTE_PENALTY, then only modified routes need to be saved
     bool need_to_save_all_the_routes = false;
-    for (const auto &penalty: penalties) {
+    for (const auto &penalty: penalties.penalties) {
         if (penalty->penalty_type != PER_ROUTE_PENALTY) {
             need_to_save_all_the_routes = true;
             break;

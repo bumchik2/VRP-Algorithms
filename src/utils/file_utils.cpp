@@ -4,12 +4,15 @@
 
 #include "../../json/single_include/nlohmann/json.hpp"
 #include "../problem/problem_description.h"
+#include "../matrices/time_matrix.h"
+
 #include "files_utils.h"
 #include "time_utils.h"
 
 #include <unordered_map>
 #include <fstream>
 #include <iostream>
+#include <cassert>
 
 using std::cout;
 using std::endl;
@@ -23,12 +26,12 @@ nlohmann::json read_json(const std::string &path_to_json) {
     return result;
 }
 
-void save_json(const nlohmann::json& json_to_save, const std::string& filename) {
+void save_json(const nlohmann::json &json_to_save, const std::string &filename) {
     std::ofstream file(filename);
     file << json_to_save;
 }
 
-ProblemObjects read_request(const std::string &path_to_request) {
+ProblemObjects read_problem_objects(const std::string &path_to_request) {
     std::unordered_map<std::string, Location> locations;
     std::unordered_map<std::string, Courier> couriers;
     std::unordered_map<std::string, Depot> depots;
@@ -73,12 +76,47 @@ ProblemObjects read_request(const std::string &path_to_request) {
     return {locations, couriers, depots};
 }
 
+Penalties read_penalties(const std::string &path_to_request) {
+    nlohmann::json request_json = read_json(path_to_request);
+
+    float distance_penalty_multiplier = request_json["vehicles"][0]["cost"]["km"];
+    for (const auto &vehicle: request_json["vehicles"]) {
+        assert(vehicle["cost"]["km"] == distance_penalty_multiplier);
+        assert(vehicle["cost"]["hour"] == 0);
+        assert(vehicle["cost"]["fixed"] == 0);
+    }
+
+    float global_proximity_factor = 0;
+    if (request_json["options"].contains("global_proximity_factor")) {
+        global_proximity_factor = request_json["options"]["global_proximity_factor"];
+    }
+
+    return {
+            distance_penalty_multiplier,
+            global_proximity_factor
+    };
+}
+
 ProblemDescription read_euclidean_problem(const std::string &path_to_request) {
-    ProblemObjects problem_objects = read_request(path_to_request);
+    nlohmann::json request_json = read_json(path_to_request);
+    assert(request_json["options"]["matrix_router"] == "geodesic");
+    assert(!request_json["options"].contains("routing_mode") || request_json["options"]["routing_mode"] == "driving");
+    for (const auto& vehicle: request_json["vehicles"]) {
+        assert(!vehicle.contains("routing_mode") || vehicle["routing_mode"] == "driving");
+    }
+
+    ProblemObjects problem_objects = read_problem_objects(path_to_request);
     DistanceMatrix distance_matrix = get_euclidean_distance_matrix(problem_objects);
-    // TODO: load time matrices somehow
-    TimeMatrix time_matrix({}, {});
-    // TODO: distance_penalty_multiplier should be passed from outside
-    return {problem_objects.locations, problem_objects.couriers, problem_objects.depots, distance_matrix, time_matrix,
-            10};
+    TimeMatrix time_matrix = get_geodesic_time_matrix(distance_matrix, "driving");
+
+    Penalties penalties = read_penalties(path_to_request);
+
+    return {
+            problem_objects.locations,
+            problem_objects.couriers,
+            problem_objects.depots,
+            distance_matrix,
+            time_matrix,
+            penalties
+    };
 }
