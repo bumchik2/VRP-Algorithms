@@ -16,12 +16,14 @@ void TimeMatrix::_check_positive_travel_time(const std::string &from_id, const s
 }
 
 float TimeMatrix::get_travel_time_depot_to_location(const std::string &depot_id, const std::string &location_id) const {
+    // Returns time in hours
     float result = _depots_to_locations_travel_times.at(depot_id).at(location_id);
     return result;
 }
 
 float TimeMatrix::get_travel_time_location_to_location(const std::string &location_id_1,
                                                        const std::string &location_id_2) const {
+    // Returns time in hours
     float result = _locations_to_locations_travel_times.at(location_id_1).at(location_id_2);
     return result;
 }

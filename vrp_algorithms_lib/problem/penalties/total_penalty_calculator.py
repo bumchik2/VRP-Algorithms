@@ -1,13 +1,15 @@
-from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
-from vrp_algorithms_lib.problem.penalties.distance_penalty_calculator import DistancePenaltyCalculator
-from vrp_algorithms_lib.problem.penalties.global_proximity_penalty_calculator import GlobalProximityPenaltyCalculator
-from vrp_algorithms_lib.problem.penalties.base_penalty_calculator import BasePenaltyCalculator
 from typing import List
 
+from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
+from vrp_algorithms_lib.problem.penalties.base_penalty_calculator import BasePenaltyCalculator
+from vrp_algorithms_lib.problem.penalties.distance_penalty_calculator import DistancePenaltyCalculator
+from vrp_algorithms_lib.problem.penalties.global_proximity_penalty_calculator import GlobalProximityPenaltyCalculator
+from vrp_algorithms_lib.problem.penalties.out_of_time_penalty_calculator import OutOfTimePenaltyCalculator
 
 ALL_PENALTY_CALCULATORS: List[BasePenaltyCalculator] = [
     DistancePenaltyCalculator(),
-    GlobalProximityPenaltyCalculator()
+    GlobalProximityPenaltyCalculator(),
+    OutOfTimePenaltyCalculator()
 ]
 
 

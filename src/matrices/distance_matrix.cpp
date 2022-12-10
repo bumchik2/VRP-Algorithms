@@ -18,12 +18,14 @@ void DistanceMatrix::_check_positive_distance(const std::string& from_id, const 
 
 float
 DistanceMatrix::get_distance_depot_to_location(const std::string &depot_id, const std::string &location_id) const {
+    // Returns distance in km
     float result = _depots_to_locations_distances.at(depot_id).at(location_id);
     return result;
 }
 
 float DistanceMatrix::get_distance_location_to_location(const std::string &location_id_1,
                                                         const std::string &location_id_2) const {
+    // Returns distance in km
     float result = _locations_to_locations_distances.at(location_id_1).at(location_id_2);
     return result;
 }

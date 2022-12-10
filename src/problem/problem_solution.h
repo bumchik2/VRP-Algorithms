@@ -11,10 +11,10 @@
 
 class ProblemSolution {
 public:
-    ProblemSolution(ProblemDescription& problem_description): _problem_description(problem_description) {
+    explicit ProblemSolution(ProblemDescription& problem_description): _problem_description(problem_description) {
     }
 
-    const ProblemDescription& get_problem_description() const {
+    [[nodiscard]] const ProblemDescription& get_problem_description() const {
         return _problem_description;
     }
 

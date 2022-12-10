@@ -14,7 +14,7 @@ def problem_description_to_solver_request(problem_description: ProblemDescriptio
 
 def transform_request(
         solver_request: dict,
-        out_of_time_penalty: float,
+        out_of_time_penalty_per_minute: float,
         distance_penalty: float,
         global_proximity_factor: float,
         solver_temperature: int,
@@ -23,7 +23,7 @@ def transform_request(
     """
     Remove fields that are not needed
     :param solver_request: dict with yandex solver request
-    :param out_of_time_penalty: penalty for one minute of time for each location
+    :param out_of_time_penalty_per_minute: penalty for one minute of time for each location
     :param distance_penalty: penalty for one km of travel distance
     :param global_proximity_factor: global_proximity_factor
     :param solver_temperature: initial annealing temperature of the solver
@@ -31,22 +31,28 @@ def transform_request(
     (see vrp_algorithms_lib.problem.penalties.global_proximity_penalty_calculator)
     :return: clean dict with yandex solver request
     """
+    if 'depot' in solver_request:
+        solver_request['depots'] = [solver_request['depot']]
+        del solver_request['depot']
+
     assert len(solver_request['depots']) == 1
 
     locations = []
     for i, location in enumerate(solver_request['locations']):
         time_window_dict = date_helpers.time_window_str2dict(location['time_window'])
+        time_window = f'{date_helpers.seconds_to_time_string(time_window_dict["begin"])}-' \
+                      f'{date_helpers.seconds_to_time_string(time_window_dict["end"])}'
         hard_time_window = f'{date_helpers.seconds_to_time_string(time_window_dict["begin"])}-100.00:00:00'
         new_location = {
             'id': f'location {i + 1}',
             'depot_id': 'depot 1',
             'point': location['point'],
-            'time_window': location['time_window'],
+            'time_window': time_window,
             'hard_time_window': hard_time_window,
             'penalty': {
                 'out_of_time': {
                     'fixed': 0,
-                    'minute': out_of_time_penalty
+                    'minute': out_of_time_penalty_per_minute
                 }
             }
         }

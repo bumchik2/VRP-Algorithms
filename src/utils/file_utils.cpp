@@ -78,9 +78,16 @@ Penalties read_penalties(const std::string &path_to_request) {
         global_proximity_factor = request_json["options"]["global_proximity_factor"];
     }
 
+    float out_of_time_penalty_per_minute = request_json["locations"][0]["penalty"]["out_of_time"]["minute"];
+    for (const auto& location: request_json["locations"]) {
+        assert(location["penalty"]["out_of_time"]["fixed"] == 0);
+        assert(location["penalty"]["out_of_time"]["minute"] == out_of_time_penalty_per_minute);
+    }
+
     return {
             distance_penalty_multiplier,
-            global_proximity_factor
+            global_proximity_factor,
+            out_of_time_penalty_per_minute
     };
 }
 

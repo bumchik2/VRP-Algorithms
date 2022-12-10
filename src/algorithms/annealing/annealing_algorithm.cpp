@@ -2,7 +2,7 @@
 // Created by eliseysudakov on 10/2/22.
 //
 
-#include "annealing_algorithm_model.h"
+#include "annealing_algorithm.h"
 #include "mutations/mutation.h"
 #include "mutations/swap_vertex_mutation.h"
 #include "mutations/transfer_mutation.h"

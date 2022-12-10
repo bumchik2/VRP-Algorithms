@@ -10,6 +10,9 @@ from typing import Union
 import pandas as pd
 from dateutil import parser
 
+DATE_FORMAT = '%Y-%m-%d'
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+SECONDS_IN_DAY = 3600 * 24
 
 def validate_datetime_format(s: Optional[str], fmt: str) -> Optional[datetime.datetime]:
     """

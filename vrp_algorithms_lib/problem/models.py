@@ -25,7 +25,7 @@ class Courier(BaseModel):
 
 class Location(BaseModel):
     id: LocationId
-    depot_id: str
+    depot_id: DepotId
     point: Point
     time_window_start_s: float
     time_window_end_s: float
@@ -44,6 +44,7 @@ class TimeMatrix(BaseModel):
 class Penalties(BaseModel):
     distance_penalty_multiplier: float
     global_proximity_factor: float
+    out_of_time_penalty_per_minute: float
 
 
 class ProblemDescription(BaseModel):
