@@ -33,6 +33,11 @@ void to_json(nlohmann::json &j, const TimeMatrix &time_matrix) {
     };
 }
 
+void from_json(const nlohmann::json &j, TimeMatrix &time_matrix) {
+    j.at("depots_to_locations_travel_times").get_to(time_matrix._depots_to_locations_travel_times);
+    j.at("locations_to_locations_travel_times").get_to(time_matrix._locations_to_locations_travel_times);
+}
+
 float get_geodesic_speed(const std::string &routing_mode) {
     if (routing_mode == "driving") {
         return 18.; // km/h
@@ -49,13 +54,13 @@ TimeMatrix get_geodesic_time_matrix(const DistanceMatrix &distance_matrix, const
             distance_matrix._locations_to_locations_distances
     );
 
-    for (auto& it1: time_matrix._depots_to_locations_travel_times) {
-        for (auto& it2: it1.second) {
+    for (auto &it1: time_matrix._depots_to_locations_travel_times) {
+        for (auto &it2: it1.second) {
             it2.second = static_cast<float>(it2.second / geodesic_speed);
         }
     }
-    for (auto& it1: time_matrix._locations_to_locations_travel_times) {
-        for (auto& it2: it1.second) {
+    for (auto &it1: time_matrix._locations_to_locations_travel_times) {
+        for (auto &it2: it1.second) {
             it2.second = static_cast<float>(it2.second / geodesic_speed);
         }
     }

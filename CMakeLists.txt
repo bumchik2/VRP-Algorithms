@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.16.3)
 project(VRP_Algorithms)
 
-set(CMAKE_CXX_STANDARD 17)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/)
+
+set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCES
         src/problem/penalties/distance_penalty.cpp
@@ -33,7 +35,7 @@ add_subdirectory(google_tests)
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(run_google_tests scripts/test.cpp ${SOURCES})
+add_executable(run_google_tests scripts/test.cpp json/single_include/nlohmann/json.hpp ${SOURCES})
 target_link_libraries(run_google_tests gtest gtest_main)
 
 find_package(PythonLibs REQUIRED)
@@ -41,6 +43,9 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 
 add_executable(VRP_Algorithms_annealing_algorithm_main
         scripts/annealing_algorithm_main.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
+
+add_executable(VRP_Algorithms_annealing_algorithm
+        scripts/annealing_algorithm_model.cpp json/single_include/nlohmann/json.hpp tqdm/tqdm.h ${SOURCES})
 
 add_executable(VRP_Algorithms_save_problem_description_to_json
         scripts/save_problem_description_to_json.cpp json/single_include/nlohmann/json.hpp ${SOURCES})

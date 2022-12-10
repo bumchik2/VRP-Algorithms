@@ -15,7 +15,7 @@ void set_working_directory_to_project_root() {
     std::filesystem::current_path(dir_path + "/..");
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // usage: ./main.exe <test_name>
 
     std::cout << "You have entered " << argc << " arguments:" << "\n";
@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     const std::string test_name = argv[1];
     const std::string inputs_folder = "test_data/inputs/";
     std::string test_request_path = inputs_folder + test_name + "/request.json";
-    ProblemDescription problem_description = read_euclidean_problem(test_request_path);
+    ProblemDescription problem_description = read_request_and_get_euclidean_problem(test_request_path);
+    std::cout << "Read request and got euclidean problem successfully" << std::endl;
     save_problem_description_to_json(problem_description, inputs_folder + test_name + "/problem_description.json");
 }

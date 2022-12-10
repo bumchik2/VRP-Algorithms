@@ -1,6 +1,8 @@
 #include <iostream>
 #include "../src/utils/time_utils.h"
 #include "../src/utils/common_utils.h"
+#include "../json/single_include/nlohmann/json.hpp"
+#include "../src/objects/location.h"
 #include "gtest/gtest.h"
 using std::cout;
 using std::endl;
@@ -43,4 +45,41 @@ TEST(CommonUtilsTests, char_to_digit_test) {
 
 TEST(CommonUtilsTests, parse_int_from_string_test) {
     ASSERT_EQ(parse_int_from_string("aa100b", 2, 4), 10);
+}
+
+TEST(JsonTests, parse_unordered_map) {
+    std::unordered_map<std::string, int> expected_result = {
+            {"a", 1},
+            {"b", 2}
+    };
+    nlohmann::json j_document = R"({
+      "a": 1,
+      "b": 2
+    })"_json;
+    auto actual_result = j_document.get<std::unordered_map<std::string, int>>();
+    ASSERT_EQ(actual_result, expected_result);
+}
+
+TEST(JsonTests, parse_locations_unordered_map) {
+    Location location = Location(
+            "location 1",
+            "depot 1",
+            55.8271484375,
+            37.5958137512207,
+            0,
+            86400
+    );
+    std::unordered_map<std::string, Location> expected_result = {
+            {location.id, location},
+    };
+    nlohmann::json j_document = R"({"locations": {
+        "location 1": {
+            "id": "location 1",
+            "depot_id": "depot 1",
+            "point": {"lat": 55.8271484375,"lon": 37.5958137512207},
+            "time_window": "00:00:00-1.00:00:00"
+        }
+    }})"_json;
+    auto actual_result = j_document["locations"].get<std::unordered_map<std::string, Location>>();
+    ASSERT_EQ(actual_result, expected_result);
 }

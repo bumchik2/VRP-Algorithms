@@ -10,10 +10,15 @@
 
 class Courier {
 public:
-    Courier(std::string id) :
+    Courier() = default;  // default constructor for nlohmann::json integrations
+
+    explicit Courier(std::string id) :
             id(std::move(id)) {}
 
     std::string id;
 };
 
-void to_json(nlohmann::json &j, const Courier& courier);
+void to_json(nlohmann::json &j, const Courier &courier);
+
+void from_json(const nlohmann::json &j, Courier &courier);
+

@@ -21,4 +21,4 @@ int datetime_string_to_seconds(const std::string &datetime_string);
 
 DatetimeObject parse_datetime_string(const std::string &datetime_string);
 
-std::pair<float, float> time_window_to_begin_seconds_end_seconds(const std::string &time_window);
+std::pair<int, int> time_window_to_begin_seconds_end_seconds(const std::string &time_window);

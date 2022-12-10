@@ -1,6 +1,6 @@
 #include "../src/algorithms/algorithm.h"
 #include "../src/algorithms/iterative_algorithm.h"
-#include "../src/algorithms/annealing/annealing_algorithm.h"
+#include "../src/algorithms/annealing/annealing_algorithm_model.h"
 #include "../src/problem/problem_initialization/problem_initialization_simple.h"
 #include "../src/utils/files_utils.h"
 #include "../src/utils/random_utils.h"
@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
     int n_iterations = string_to_int(argv[2]);
     float initial_temperature = static_cast<float>(string_to_int(argv[3]));
 
-    std::string test_request_path = "test_data/inputs/" + test_name + "/request.json";
-    ProblemDescription problem_description = read_euclidean_problem(test_request_path);
+    std::string test_problem_description_path = "test_data/inputs/" + test_name + "/problem_description.json";
+    ProblemDescription problem_description = read_problem_description(test_problem_description_path);
     ProblemSolution problem_solution(problem_description);
     ProblemInitializationSimple problem_initialization;
     problem_initialization.initialize(problem_description, problem_solution);

@@ -61,7 +61,7 @@ DatetimeObject parse_datetime_string(const std::string& datetime_string) {
     };
 }
 
-std::pair<float, float> time_window_to_begin_seconds_end_seconds(const std::string &time_window) {
+std::pair<int, int> time_window_to_begin_seconds_end_seconds(const std::string &time_window) {
     int separator_pos = static_cast<int>(time_window.find('-'));
     std::string time_window_start = time_window.substr(0, separator_pos);
     std::string time_window_end = time_window.substr(separator_pos + 1, time_window.size() - separator_pos - 1);

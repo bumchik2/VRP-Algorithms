@@ -76,3 +76,8 @@ void to_json(nlohmann::json &j, const DistanceMatrix &distance_matrix) {
             {"locations_to_locations_distances", distance_matrix._locations_to_locations_distances},
     };
 }
+
+void from_json(const nlohmann::json &j, DistanceMatrix &distance_matrix) {
+    j.at("depots_to_locations_distances").get_to(distance_matrix._depots_to_locations_distances);
+    j.at("locations_to_locations_distances").get_to(distance_matrix._locations_to_locations_distances);
+}

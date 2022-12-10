@@ -13,6 +13,8 @@
 
 class Penalties {
 public:
+    Penalties() = default;
+
     Penalties(float distance_penalty_multiplier, float global_proximity_factor) :
             distance_penalty_multiplier(distance_penalty_multiplier), global_proximity_factor(global_proximity_factor) {
         if (distance_penalty_multiplier > 0) {
@@ -26,8 +28,10 @@ public:
 
     std::vector<std::shared_ptr<Penalty>> penalties{};
 
-    float distance_penalty_multiplier;
-    float global_proximity_factor;
+    float distance_penalty_multiplier{};
+    float global_proximity_factor{};
 };
 
 void to_json(nlohmann::json &j, const Penalties &penalties);
+
+void from_json(const nlohmann::json &j, Penalties &penalties);

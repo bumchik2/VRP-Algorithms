@@ -22,6 +22,8 @@
 
 class ProblemDescription {
 public:
+    ProblemDescription() = default;  // default constructor for nlohmann::json integrations
+
     ProblemDescription(std::unordered_map<std::string, Location> locations,
                        std::unordered_map<std::string, Courier> couriers,
                        std::unordered_map<std::string, Depot> depots,
@@ -32,19 +34,21 @@ public:
             penalties(std::move(penalties)) {
     }
 
-    const std::unordered_map<std::string, Location> locations;
-    const std::unordered_map<std::string, Courier> couriers;
-    const std::unordered_map<std::string, Depot> depots;
+    std::unordered_map<std::string, Location> locations;
+    std::unordered_map<std::string, Courier> couriers;
+    std::unordered_map<std::string, Depot> depots;
 
-    const DistanceMatrix distance_matrix;
-    const TimeMatrix time_matrix;
+    DistanceMatrix distance_matrix;
+    TimeMatrix time_matrix;
 
-    const Penalties penalties;
+    Penalties penalties;
 
 private:
     friend void to_json(nlohmann::json &j, const ProblemDescription &problem_description);
 };
 
 void to_json(nlohmann::json &j, const ProblemDescription &problem_description);
+
+void from_json(const nlohmann::json &j, ProblemDescription &problem_description);
 
 void save_problem_description_to_json(const ProblemDescription &problem_description, const std::string &filename);

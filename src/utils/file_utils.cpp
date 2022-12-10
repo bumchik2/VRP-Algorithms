@@ -42,34 +42,21 @@ ProblemObjects read_problem_objects(const std::string &path_to_request) {
         const auto time_window_parsed = time_window_to_begin_seconds_end_seconds(location_json["time_window"]);
         locations.insert({
                                  location_json["id"],
-                                 Location(
-                                         location_json["id"],
-                                         location_json["depot_id"],
-                                         location_json["point"]["lat"],
-                                         location_json["point"]["lon"],
-                                         time_window_parsed.first,
-                                         time_window_parsed.second
-                                 )
+                                 location_json.get<Location>()
                          });
     }
 
     for (const auto &courier_json: request_json["vehicles"]) {
         couriers.insert({
                                 courier_json["id"],
-                                Courier(
-                                        courier_json["id"]
-                                )
+                                courier_json.get<Courier>()
                         });
     }
 
     for (const auto &depot_json: request_json["depots"]) {
         depots.insert({
                               depot_json["id"],
-                              Depot(
-                                      depot_json["id"],
-                                      depot_json["point"]["lat"],
-                                      depot_json["point"]["lon"]
-                              )
+                              depot_json.get<Depot>()
                       });
     }
 
@@ -97,18 +84,17 @@ Penalties read_penalties(const std::string &path_to_request) {
     };
 }
 
-ProblemDescription read_euclidean_problem(const std::string &path_to_request) {
+ProblemDescription read_request_and_get_euclidean_problem(const std::string &path_to_request) {
     nlohmann::json request_json = read_json(path_to_request);
     assert(request_json["options"]["matrix_router"] == "geodesic");
     assert(!request_json["options"].contains("routing_mode") || request_json["options"]["routing_mode"] == "driving");
-    for (const auto& vehicle: request_json["vehicles"]) {
+    for (const auto &vehicle: request_json["vehicles"]) {
         assert(!vehicle.contains("routing_mode") || vehicle["routing_mode"] == "driving");
     }
 
     ProblemObjects problem_objects = read_problem_objects(path_to_request);
     DistanceMatrix distance_matrix = get_euclidean_distance_matrix(problem_objects);
     TimeMatrix time_matrix = get_geodesic_time_matrix(distance_matrix, "driving");
-
     Penalties penalties = read_penalties(path_to_request);
 
     return {
@@ -119,4 +105,10 @@ ProblemDescription read_euclidean_problem(const std::string &path_to_request) {
             time_matrix,
             penalties
     };
+}
+
+ProblemDescription read_problem_description(const std::string &path_to_problem_description) {
+    nlohmann::json problem_description_json = read_json(path_to_problem_description);
+    ProblemDescription result = problem_description_json.get<ProblemDescription>();
+    return result;
 }

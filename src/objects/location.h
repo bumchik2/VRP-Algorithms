@@ -10,8 +10,10 @@
 
 class Location {
 public:
-    Location(std::string id, std::string depot_id, float lat, float lon, float time_window_start_s,
-             float time_window_end_s) :
+    Location() = default;  // default constructor for nlohmann::json integrations
+
+    Location(std::string id, std::string depot_id, float lat, float lon,
+             int time_window_start_s, int time_window_end_s) :
             id(std::move(id)), depot_id(std::move(depot_id)), lat(lat), lon(lon),
             time_window_start_s(time_window_start_s), time_window_end_s(time_window_end_s) {}
 
@@ -19,10 +21,16 @@ public:
     std::string depot_id;
     float lat = -1.;
     float lon = -1.;
-    float time_window_start_s;
-    float time_window_end_s;
+    int time_window_start_s{};
+    int time_window_end_s{};
 
     [[nodiscard]] std::string get_time_window_str() const;
+
+    friend bool operator == (Location const&, Location const&);  // only used in google tests
 };
 
 void to_json(nlohmann::json &j, const Location &location);
+
+void from_json(const nlohmann::json &j, Location &location);
+
+bool operator == (Location const&, Location const&);

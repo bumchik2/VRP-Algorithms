@@ -9,6 +9,8 @@
 
 class Depot {
 public:
+    Depot() = default;  // default constructor for nlohmann::json integrations
+
     Depot(std::string id, float lat, float lon) :
             id(std::move(id)), lat(lat), lon(lon) {}
 
@@ -18,3 +20,5 @@ public:
 };
 
 void to_json(nlohmann::json &j, const Depot &depot);
+
+void from_json(const nlohmann::json &j, Depot &depot);

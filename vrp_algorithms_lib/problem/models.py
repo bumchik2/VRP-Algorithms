@@ -41,8 +41,9 @@ class TimeMatrix(BaseModel):
     locations_to_locations_travel_times: Dict[LocationId, Dict[LocationId, float]]
 
 
-class PenaltyMultipliers(BaseModel):
+class Penalties(BaseModel):
     distance_penalty_multiplier: float
+    global_proximity_factor: float
 
 
 class ProblemDescription(BaseModel):
@@ -51,7 +52,7 @@ class ProblemDescription(BaseModel):
     depots: Dict[DepotId, Depot]
     distance_matrix: DistanceMatrix
     time_matrix: TimeMatrix
-    penalties: PenaltyMultipliers
+    penalties: Penalties
 
 
 class Route(BaseModel):
