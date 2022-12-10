@@ -3,7 +3,7 @@ from vrp_algorithms_lib.problem.models import ProblemDescription
 
 
 def solver_request_to_problem_description(solver_request: dict) -> ProblemDescription:
-    # TODO
+    # TODO (should be done via c++ script `save_problem_description_to_json`)
     pass
 
 
