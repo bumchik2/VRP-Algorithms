@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(SOURCES
         src/problem/penalties/distance_penalty.cpp
         src/problem/penalties/global_proximity_penalty.cpp
+        src/problem/penalties/out_of_time_penalty.cpp
         src/problem/penalties/penalty.cpp
         src/problem/penalties/penalties.cpp
         src/algorithms/annealing/mutations/mutation.cpp
@@ -26,6 +27,7 @@ set(SOURCES
         src/problem/problem_initialization/problem_initialization_simple.cpp
         src/problem/problem_description.cpp
         src/problem/problem_solution.cpp
+        src/problem/visit_time_scheduler.cpp
         src/utils/common_utils.cpp
         src/utils/file_utils.cpp
         src/utils/random_utils.cpp

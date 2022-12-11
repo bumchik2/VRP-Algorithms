@@ -3,11 +3,16 @@ from abc import ABC, abstractmethod
 import torch
 
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import CourierId
 
 
 class ModelBase(ABC):
-    def __init__(self, device: str):
-        self.device = device
+    @abstractmethod
+    def initialize(
+            self,
+            problem_state: ProblemState
+    ):
+        raise NotImplementedError
 
     @abstractmethod
     def _get_couriers_logits(
@@ -20,19 +25,19 @@ class ModelBase(ABC):
             self,
             problem_state: ProblemState
     ):
-        return self._get_couriers_logits(problem_state).to(self.device)
+        return self._get_couriers_logits(problem_state)
 
     @abstractmethod
     def _get_locations_logits(
             self,
-            courier_idx: int,
+            courier_id: CourierId,
             problem_state: ProblemState
     ) -> torch.tensor:
         raise NotImplementedError
 
     def get_locations_logits(
             self,
-            courier_idx: int,
+            courier_id: CourierId,
             problem_state: ProblemState
     ):
-        return self._get_locations_logits(courier_idx, problem_state).to(self.device)
+        return self._get_locations_logits(courier_id, problem_state)

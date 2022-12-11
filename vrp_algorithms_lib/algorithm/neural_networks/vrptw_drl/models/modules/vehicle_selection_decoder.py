@@ -25,5 +25,5 @@ class VehicleSelectionDecoder(nn.Module):
         vehicles_routes_embedding = torch.cat(
             [vehicles_state_embedding, routes_embedding], dim=1
         )
-        logits = self.fc(vehicles_routes_embedding)
+        logits = self.fc(vehicles_routes_embedding)[:, 0]
         return logits

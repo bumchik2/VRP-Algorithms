@@ -21,6 +21,9 @@ class BaseInference:
             problem_description=problem_description,
             initial_capacity=initial_capacity
         )
+
+        self.model.initialize(self.problem_state)
+
         self.device = device
 
     @abstractmethod

@@ -4,6 +4,7 @@ from vrp_algorithms_lib.algorithm.clusterization.clusterizer_name import Cluster
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Route
 from vrp_algorithms_lib.problem.models import Routes
+from typing import List
 
 
 class GreedyAlgorithm(BaseAlgorithm):
@@ -15,12 +16,14 @@ class GreedyAlgorithm(BaseAlgorithm):
 
         routes = Routes(routes=[])
 
-        location_points = [location.point for location in problem_description.locations.values()]
+        location_points: List[List[float]] = [[location.lon, location.lat] for location in
+                                              problem_description.locations.values()]
         clusters = self.clusterizer.clusterize(location_points, len(problem_description.couriers))
 
         for cluster_number, courier in enumerate(problem_description.couriers.values()):
             location_ids_to_visit = set(
-                [location.id for current_cluster_number, location in zip(clusters, problem_description.locations.values())
+                [location.id for current_cluster_number, location in
+                 zip(clusters, problem_description.locations.values())
                  if current_cluster_number == cluster_number]
             )
 

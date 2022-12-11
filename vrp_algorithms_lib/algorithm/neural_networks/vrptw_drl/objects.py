@@ -1,6 +1,7 @@
 from typing import List
 from typing import Union
 from typing import Set
+from typing import Dict
 
 from pydantic import BaseModel
 
@@ -14,20 +15,17 @@ from vrp_algorithms_lib.problem.models import Routes
 
 class VehicleState(BaseModel):
     courier_id: CourierId
-    remaining_capacity: int
     total_distance: float
     partial_route: List[Union[DepotId, LocationId]]
 
 
 def initialize_vehicle_state(
         courier_id: CourierId,
-        initial_capacity: int,
         depot_id: DepotId
 ) -> VehicleState:
     return VehicleState.parse_obj({
         'courier_id': courier_id,
-        'remaining_capacity': initial_capacity,
-        'total_distance': 0,
+        'total_distance': 0,  # distance in km
         'partial_route': [depot_id]
     })
 
@@ -40,7 +38,13 @@ class Action(BaseModel):
 class ProblemState(BaseModel):
     vehicle_states: List[VehicleState]
     problem_description: ProblemDescription
-    visited_location_idx: Set[LocationId] = set()
+    visited_location_ids: Set[LocationId] = set()
+
+    locations_idx: List[List[int]]
+    location_id_to_idx: Dict[LocationId, int]
+    idx_to_location_id: Dict[int, LocationId]
+    courier_id_to_idx: Dict[CourierId, int]
+    idx_to_courier_id: Dict[int, CourierId]
 
     def get_delta_distance(self, action) -> float:
         for vehicle_state in self.vehicle_states:
@@ -57,38 +61,58 @@ class ProblemState(BaseModel):
 
     def get_reward(self, action: Action):
         delta_distance = self.get_delta_distance(action)
+        # TODO: support for other penalties
         return -delta_distance * self.problem_description.penalties.distance_penalty_multiplier
 
     def update(self, action: Action):
-        assert action.location_id not in self.visited_location_idx, f'{action.location_id} was visited before'
-        self.visited_location_idx.update({action.location_id})
+        assert action.location_id not in self.visited_location_ids, f'{action.location_id} was visited before'
+        self.visited_location_ids.update({action.location_id})
+        new_location_idx = self.location_id_to_idx[action.location_id]
 
         for vehicle_state in self.vehicle_states:
+            current_courier_idx = self.courier_id_to_idx[vehicle_state.courier_id]
+
             if action.courier_id == vehicle_state.courier_id:
                 delta_distance = self.get_delta_distance(action)
                 vehicle_state.total_distance += delta_distance
                 vehicle_state.remaining_capacity -= 1
                 vehicle_state.partial_route.append(action.location_id)
+                self.locations_idx[current_courier_idx].append(new_location_idx)
             else:
                 # All the routes should be of equal length at each step
-                vehicle_state.partial_route.append(vehicle_state.partial_route[-1])
+                last_location_id_in_the_route = vehicle_state.partial_route[-1]
+                vehicle_state.partial_route.append(last_location_id_in_the_route)
+                self.locations_idx[current_courier_idx].append(self.location_id_to_idx[last_location_id_in_the_route])
 
 
-def initialize_problem_state(problem_description: ProblemDescription, initial_capacity: int) -> ProblemState:
+def initialize_problem_state(problem_description: ProblemDescription) -> ProblemState:
+    locations_idx = [[len(problem_description.locations)] for _ in range(len(problem_description.couriers))]
+
+    location_id_to_idx = {location.id: i for i, location in enumerate(problem_description.locations.values())}
+    idx_to_location_id = {i: location_id for location_id, i in location_id_to_idx.items()}
+
+    courier_id_to_idx = {courier.id: i for i, courier in enumerate(problem_description.couriers.values())}
+    idx_to_courier_id = {i: courier_id for courier_id, i in courier_id_to_idx.items()}
+
     assert len(problem_description.depots) == 1, 'Multiple depots are not supported yet'
     depot_id = list(problem_description.depots.keys())[0]
 
     vehicle_states = [
         initialize_vehicle_state(
-            courier_id=courier_id,
-            initial_capacity=initial_capacity,
+            courier_id=idx_to_courier_id[courier_idx],
             depot_id=depot_id
-        ) for courier_id in problem_description.couriers
+        ) for courier_idx in range(len(problem_description.couriers))
     ]
 
     return ProblemState(
         problem_description=problem_description,
-        vehicle_states=vehicle_states
+        vehicle_states=vehicle_states,
+        visited_location_ids=set(),
+        locations_idx=locations_idx,
+        location_id_to_idx=location_id_to_idx,
+        idx_to_location_id=idx_to_location_id,
+        courier_id_to_idx=courier_id_to_idx,
+        idx_to_courier_id=idx_to_courier_id
     )
 
 
