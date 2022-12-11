@@ -1,8 +1,8 @@
 from abc import abstractmethod
 
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.models.model_base import ModelBase
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.objects import extract_routes_from_problem_state
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.objects import initialize_problem_state
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import extract_routes_from_problem_state
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import initialize_problem_state
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Routes
 

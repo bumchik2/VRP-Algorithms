@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.objects import ProblemState
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState
 
 
 class ModelBase(ABC):

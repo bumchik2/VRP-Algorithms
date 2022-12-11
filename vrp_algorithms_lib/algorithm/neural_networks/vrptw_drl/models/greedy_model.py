@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.models.model_base import ModelBase
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.objects import ProblemState, Action
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState, Action
 
 
 class GreedyModel(ModelBase):

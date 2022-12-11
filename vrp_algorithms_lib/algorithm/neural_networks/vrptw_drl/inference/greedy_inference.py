@@ -1,7 +1,7 @@
 import torch
 
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.inference.base_inference import BaseInference
-from vrp_algorithms_lib.algorithm.neural_networks.hcvrp_drl.objects import Action
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.base_inference import BaseInference
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Action
 
 
 class GreedyInference(BaseInference):
