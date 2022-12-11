@@ -1,10 +1,13 @@
+import time
 from collections import defaultdict
 from typing import Dict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as sps
 import torch.optim
 import torch.utils.data as data_utils
+from IPython.display import clear_output
 from tqdm import tqdm
 
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
@@ -13,6 +16,28 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Probl
 from vrp_algorithms_lib.problem.models import ProblemDescription, Courier, Location, Depot, DepotId, CourierId, \
     LocationId, Penalties
 from vrp_algorithms_lib.problem.models import get_geodesic_time_matrix, get_euclidean_distance_matrix
+
+
+def plot_learning_curves(history):
+    plt.figure(figsize=(14, 6))
+    plt.subplot(1, 2, 1)
+    plt.title('Loss per epoch', fontsize=15)
+    mean_epoch_loss_history = history['train']['mean_epoch_loss']
+    plt.plot(range(1, len(mean_epoch_loss_history) + 1), mean_epoch_loss_history, label='mean')
+    plt.plot(range(1, len(mean_epoch_loss_history) + 1), history['train']['5th_percentile_epoch_loss'],
+             label='5th percentile')
+    plt.plot(range(1, len(mean_epoch_loss_history) + 1), history['train']['95th_percentile_epoch_loss'],
+             label='95th percentile')
+    plt.xlabel('Epoch', fontsize=15)
+    plt.legend()
+    plt.grid(visible=True)
+
+    plt.subplot(1, 2, 2)
+    plt.title('Problem loss', fontsize=15)
+    problem_loss_history = history['train']['problem_loss']
+    plt.plot(range(1, len(problem_loss_history) + 1), problem_loss_history)
+    plt.grid(visible=True)
+    plt.show()
 
 
 def get_random_problem_description(
@@ -76,14 +101,16 @@ class SimpleDataset(data_utils.Dataset):
     def __init__(
             self,
             num_vehicles: int,
-            num_locations: int
+            num_locations: int,
+            dataset_size: int = 100
     ):
         super().__init__()
         self.num_vehicles = num_vehicles
         self.num_locations = num_locations
+        self.dataset_size = dataset_size
 
     def __len__(self):
-        return 100
+        return self.dataset_size
 
     def __getitem__(self, idx: int):
         random_problem_state = get_random_problem_description(
@@ -100,20 +127,20 @@ def train_one_problem(
         optimizer: torch.optim.Optimizer,
         problem_description: ProblemDescription
 ) -> float:
+    optimizer.zero_grad()
+
     problem_state: ProblemState = initialize_problem_state(problem_description=problem_description)
 
     model.initialize(problem_state)
     trainer.initialize(problem_state)
 
-    total_problem_loss = 0
+    total_loss = torch.tensor(0.)
 
     for step_number in range(len(problem_description.locations)):
-        optimizer.zero_grad()
-
         model_couriers_logits = model.get_couriers_logits(problem_state=problem_state)
         trainer_couriers_logits = trainer.get_couriers_logits(problem_state=problem_state)
 
-        model_courier_idx = torch.argmax(trainer_couriers_logits).item()
+        model_courier_idx = torch.argmax(model_couriers_logits).item()
         model_courier_id = problem_state.idx_to_courier_id[model_courier_idx]
         trainer_courier_idx = torch.argmax(trainer_couriers_logits).item()
         trainer_courier_id = problem_state.idx_to_courier_id[trainer_courier_idx]
@@ -126,7 +153,7 @@ def train_one_problem(
             courier_id=chosen_courier_id, problem_state=problem_state
         )
 
-        model_location_idx = torch.argmax(trainer_locations_logits).item()
+        model_location_idx = torch.argmax(model_locations_logits).item()
         model_location_id = problem_state.idx_to_location_id[model_location_idx]
         trainer_location_idx = torch.argmax(trainer_locations_logits).item()
         trainer_location_id = problem_state.idx_to_location_id[trainer_location_idx]
@@ -139,14 +166,14 @@ def train_one_problem(
 
         courier_choice_loss = criterion(model_couriers_logits, torch.tensor(trainer_courier_idx))
         location_choice_loss = criterion(model_locations_logits, torch.tensor(trainer_location_idx))
-        total_loss = (courier_choice_loss + location_choice_loss) * (trainer_reward - model_reward)
-        total_loss.backward()
+        total_loss += (courier_choice_loss + location_choice_loss) * (trainer_reward - model_reward)
 
-        optimizer.step()
+        problem_state.update(trainer_action)
 
-        total_problem_loss += total_loss.item()
+    total_loss.backward()
+    optimizer.step()
 
-    return total_problem_loss / len(problem_description.locations)
+    return total_loss.item() / len(problem_description.locations)
 
 
 def train(
@@ -155,14 +182,16 @@ def train(
         criterion,
         optimizer: torch.optim.Optimizer,
         num_epochs: int,
-        dataset: data_utils.Dataset
+        dataset
 ):
     history = defaultdict(lambda: defaultdict(list))
 
-    for _ in tqdm(range(num_epochs)):
+    for epoch in tqdm(range(num_epochs), position=0, leave=True):
+        epoch_start_time = time.time()
+
         problem_losses = []
 
-        for problem_description in dataset:
+        for i, problem_description in tqdm(enumerate(dataset), total=len(dataset), position=0, leave=False):
             problem_loss = train_one_problem(
                 model=model,
                 trainer=trainer,
@@ -170,9 +199,17 @@ def train(
                 optimizer=optimizer,
                 problem_description=problem_description
             )
-            history['train']['average_problem_loss'].append(problem_loss)
+            history['train']['problem_loss'].append(problem_loss)
             problem_losses.append(problem_loss)
+            if i + 1 == len(dataset):
+                break
 
-        history['train']['average_epoch_loss'].append(np.mean(problem_losses))
+        history['train']['mean_epoch_loss'].append(np.mean(problem_losses))
+        history['train']['5th_percentile_epoch_loss'].append(np.quantile(problem_losses, 0.05))
+        history['train']['95th_percentile_epoch_loss'].append(np.quantile(problem_losses, 0.95))
+
+        clear_output()
+        print(f'Epoch {epoch + 1} of {num_epochs} took {round(time.time() - epoch_start_time, 3)} seconds')
+        plot_learning_curves(history)
 
     return history

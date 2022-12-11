@@ -58,14 +58,14 @@ class LocationSelectionDecoder(nn.Module):
         # graph_embedding_expanded is of size { number_of_locations x
         # (2 * graph_embedding_dim + vehicles_state_information_dim + routes_embedding_dim) }
         graph_embedding_expanded = torch.cat(
-            [graph_embedding, vehicle_state_information, last_node_embedding, route_embedding]
+            [graph_embedding, vehicle_state_information, last_node_embedding, route_embedding], dim=1
         )
 
         query = self.fc_query(graph_embedding_expanded)
         key = self.fc_key(graph_embedding)
         value = self.fc_value(graph_embedding)
 
-        locations_embedding = self.multi_head_attention(query, key, value, need_weights=False)
+        locations_embedding = self.multi_head_attention(query, key, value)[0]
         # number_of_locations x locations_embedding_dim
 
         logits = self.fc(locations_embedding)[:-1, 0]  # remove the last logit for depot

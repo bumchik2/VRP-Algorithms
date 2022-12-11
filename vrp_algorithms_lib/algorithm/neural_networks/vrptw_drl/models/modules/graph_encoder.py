@@ -43,5 +43,5 @@ class GraphEncoder(nn.Module):
         key = nn.ReLU()(self.fc_key(hidden))  # number_of_locations x graph_embedding_dim
         value = nn.ReLU()(self.fc_value(hidden))  # number_of_locations x graph_embedding_dim
 
-        graph_embedding = self.multi_head_attention(query, key, value, need_weights=False)
+        graph_embedding = self.multi_head_attention(query, key, value)[0]
         return graph_embedding  # number_of_locations x graph_embedding_dim

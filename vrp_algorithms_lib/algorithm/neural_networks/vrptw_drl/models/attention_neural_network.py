@@ -27,7 +27,7 @@ class AttentionNeuralNetwork(nn.Module):
             locations_embedding_dim: int,
             dropout: float,
             graph_encoder_hidden_dim: int = 128,  # 128 in the original article
-            vehicles_state_hidden_dim: int = 512,  # 512 in the original article
+            vehicles_state_embedding_dim: int = 512,  # 512 in the original article
             routes_embedding_dim: int = 512,  # 512 in the original article
             num_heads: int = 8,  # 8 in the original article
     ):
@@ -43,7 +43,7 @@ class AttentionNeuralNetwork(nn.Module):
 
         self.vehicles_state_encoder = VehiclesStateEncoder(
             vehicles_state_information_dim=vehicles_state_information_dim,
-            vehicles_state_hidden_dim=vehicles_state_hidden_dim
+            vehicles_state_embedding_dim=vehicles_state_embedding_dim
         )
 
         self.routes_encoder = RoutesEncoder(
@@ -52,7 +52,7 @@ class AttentionNeuralNetwork(nn.Module):
         )
 
         self.vehicle_selection_decoder = VehicleSelectionDecoder(
-            vehicles_state_information_dim=vehicles_state_information_dim,
+            vehicles_state_embedding_dim=vehicles_state_embedding_dim,
             routes_embedding_dim=routes_embedding_dim
         )
 

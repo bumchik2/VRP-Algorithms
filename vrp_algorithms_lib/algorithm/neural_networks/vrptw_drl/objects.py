@@ -75,14 +75,13 @@ class ProblemState(BaseModel):
             if action.courier_id == vehicle_state.courier_id:
                 delta_distance = self.get_delta_distance(action)
                 vehicle_state.total_distance += delta_distance
-                vehicle_state.remaining_capacity -= 1
                 vehicle_state.partial_route.append(action.location_id)
                 self.locations_idx[current_courier_idx].append(new_location_idx)
             else:
                 # All the routes should be of equal length at each step
                 last_location_id_in_the_route = vehicle_state.partial_route[-1]
                 vehicle_state.partial_route.append(last_location_id_in_the_route)
-                self.locations_idx[current_courier_idx].append(self.location_id_to_idx[last_location_id_in_the_route])
+                self.locations_idx[current_courier_idx].append(len(self.problem_description.locations))
 
 
 def initialize_problem_state(problem_description: ProblemDescription) -> ProblemState:

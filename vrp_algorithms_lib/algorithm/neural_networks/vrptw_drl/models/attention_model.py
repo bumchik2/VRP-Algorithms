@@ -66,7 +66,7 @@ class AttentionModel(ModelBase, nn.Module):
         ]
         locations_information.append(depot_information)
 
-        return torch.tensor(locations_information)
+        return torch.tensor(locations_information, dtype=torch.float32)
 
     def get_vehicles_state_information(
             self,
@@ -107,7 +107,7 @@ class AttentionModel(ModelBase, nn.Module):
 
             vehicles_state_information.append(vehicle_information)
 
-        return torch.tensor(vehicles_state_information)
+        return torch.tensor(vehicles_state_information, dtype=torch.float32)
 
     def initialize(
             self,

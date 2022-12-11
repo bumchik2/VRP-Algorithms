@@ -5,12 +5,11 @@ import torch
 class VehicleSelectionDecoder(nn.Module):
     def __init__(
             self,
-            vehicles_state_information_dim: int,
+            vehicles_state_embedding_dim: int,
             routes_embedding_dim: int
     ):
         super().__init__()
-
-        self.fc = nn.Linear(vehicles_state_information_dim + routes_embedding_dim, 1)
+        self.fc = nn.Linear(vehicles_state_embedding_dim + routes_embedding_dim, 1)
 
     def forward(
             self,
