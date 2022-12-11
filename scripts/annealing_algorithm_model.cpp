@@ -4,7 +4,7 @@
 
 #include "../src/algorithms/algorithm.h"
 #include "../src/algorithms/iterative_algorithm.h"
-#include "../src/algorithms/annealing/annealing_algorithm_model.h"
+#include "../src/algorithms/annealing/annealing_algorithm.h"
 #include "../src/problem/problem_initialization/problem_initialization_simple.h"
 #include "../src/utils/files_utils.h"
 #include "../src/utils/random_utils.h"

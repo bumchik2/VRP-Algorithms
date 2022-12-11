@@ -1,6 +1,6 @@
 #include "../src/algorithms/algorithm.h"
 #include "../src/algorithms/iterative_algorithm.h"
-#include "../src/algorithms/annealing/annealing_algorithm_model.h"
+#include "../src/algorithms/annealing/annealing_algorithm.h"
 #include "../src/problem/problem_initialization/problem_initialization_simple.h"
 #include "../src/utils/files_utils.h"
 #include "../src/utils/random_utils.h"
@@ -53,16 +53,5 @@ int main(int argc, char *argv[]) {
     algorithm.save_penalty(results_folder + int_to_string(n_iterations) + "_iterations_penalty.json");
     algorithm.save_checkpoints(results_folder + int_to_string(n_iterations) + "_iterations_checkpoints.json");
     algorithm.save_penalty_history(results_folder + int_to_string(n_iterations) + "_iterations_penalty_history.json");
-
-    // TODO: читать в этом скрипте нужно не request, а problem_desciprition
-    // TODO: добавить penalty за балансировку маршрутов
-    // TODO: нужно написать питоновский класс / функцию для вычисления Penalty (и соответствующую pydantic модель добавить)
-
-    // TODO: перевести viz на pydantic модели (пониженный приоритет)
-
-    // TODO наверное нужно как-то разделить file_utils (низкий приоритет)
-    // TODO: документация к питоновским функциям (низкий приоритет)
-    // TODO: добавить больше мутаций (низкий приоритет)
-
     return 0;
 }
