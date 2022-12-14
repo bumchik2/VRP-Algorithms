@@ -12,19 +12,14 @@ class BaseInference:
             self,
             model: ModelBase,
             problem_description: ProblemDescription,
-            initial_capacity: int = 100,
-            device: str = 'cpu'
     ):
         self.model = model
 
         self.problem_state = initialize_problem_state(
             problem_description=problem_description,
-            initial_capacity=initial_capacity
         )
 
         self.model.initialize(self.problem_state)
-
-        self.device = device
 
     @abstractmethod
     def _solve_problem(self):

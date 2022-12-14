@@ -1,6 +1,12 @@
+import os
 import time
 from collections import defaultdict
+from typing import Any
 from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +16,8 @@ import torch.utils.data as data_utils
 from IPython.display import clear_output
 from tqdm import tqdm
 
+import vrp_algorithms_lib.analytical_tools.viz_problem_description as my_viz
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.greedy_inference import GreedyInference
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState, Action, \
     initialize_problem_state
@@ -19,25 +27,38 @@ from vrp_algorithms_lib.problem.models import get_geodesic_time_matrix, get_eucl
 
 
 def plot_learning_curves(history):
-    plt.figure(figsize=(14, 6))
-    plt.subplot(1, 2, 1)
+    plt.figure(figsize=(20, 6))
+
+    plt.subplot(1, 3, 1)
     plt.title('Loss per epoch', fontsize=15)
-    mean_epoch_loss_history = history['train']['mean_epoch_loss']
+    mean_epoch_loss_history = history['train']['mean_loss']
     plt.plot(range(1, len(mean_epoch_loss_history) + 1), mean_epoch_loss_history, label='mean')
-    plt.plot(range(1, len(mean_epoch_loss_history) + 1), history['train']['5th_percentile_epoch_loss'],
+    plt.plot(range(1, len(mean_epoch_loss_history) + 1), history['train']['5th_percentile_loss'],
              label='5th percentile')
-    plt.plot(range(1, len(mean_epoch_loss_history) + 1), history['train']['95th_percentile_epoch_loss'],
+    plt.plot(range(1, len(mean_epoch_loss_history) + 1), history['train']['95th_percentile_loss'],
              label='95th percentile')
     plt.xlabel('Epoch', fontsize=15)
     plt.legend()
     plt.grid(visible=True)
 
-    plt.subplot(1, 2, 2)
+    plt.subplot(1, 3, 2)
+    plt.title('Delta reward percentage per epoch, %', fontsize=15)
+    mean_delta_reward_percentage_history = history['train']['mean_delta_reward_percentage']
+    plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), mean_delta_reward_percentage_history,
+             label='mean')
+    plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), history['train'][
+        '5th_percentile_delta_reward_percentage'], label='5th percentile')
+    plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), history['train'][
+        '95th_percentile_delta_reward_percentage'], label='95th percentile')
+    plt.xlabel('Epoch', fontsize=15)
+    plt.legend()
+    plt.grid(visible=True)
+
+    plt.subplot(1, 3, 3)
     plt.title('Problem loss', fontsize=15)
-    problem_loss_history = history['train']['problem_loss']
+    problem_loss_history = history['train']['mean_problem_loss']
     plt.plot(range(1, len(problem_loss_history) + 1), problem_loss_history)
     plt.grid(visible=True)
-    plt.show()
 
 
 def get_random_problem_description(
@@ -100,22 +121,47 @@ def get_random_problem_description(
 class SimpleDataset(data_utils.Dataset):
     def __init__(
             self,
-            num_vehicles: int,
-            num_locations: int,
+            num_vehicles: Optional[int] = None,
+            min_vehicles: Optional[int] = None,
+            max_vehicles: Optional[int] = None,
+            num_locations: Optional[int] = None,
+            min_locations: Optional[int] = None,
+            max_locations: Optional[int] = None,
             dataset_size: int = 100
     ):
         super().__init__()
+
+        if min_vehicles is not None:
+            assert max_vehicles is not None and num_vehicles is None
+        else:
+            assert num_vehicles is not None
+        if min_locations is not None:
+            assert max_locations is not None and num_locations is None
+        else:
+            assert num_locations is not None
+
         self.num_vehicles = num_vehicles
+        self.min_vehicles = min_vehicles
+        self.max_vehicles = max_vehicles
+
         self.num_locations = num_locations
+        self.min_locations = min_locations
+        self.max_locations = max_locations
+
         self.dataset_size = dataset_size
 
     def __len__(self):
         return self.dataset_size
 
     def __getitem__(self, idx: int):
+        num_vehicles = self.num_vehicles if self.num_vehicles is not None else sps.randint(
+            self.min_vehicles, self.max_vehicles + 1).rvs()
+        num_locations = self.num_locations if self.num_locations is not None else sps.randint(
+            self.min_locations, self.max_locations + 1).rvs()
+
         random_problem_state = get_random_problem_description(
-            num_vehicles=self.num_vehicles,
-            num_locations=self.num_locations
+            num_vehicles=num_vehicles,
+            num_locations=num_locations
         )
         return random_problem_state
 
@@ -126,7 +172,7 @@ def train_one_problem(
         criterion,
         optimizer: torch.optim.Optimizer,
         problem_description: ProblemDescription
-) -> float:
+) -> Dict[str, Any]:
     optimizer.zero_grad()
 
     problem_state: ProblemState = initialize_problem_state(problem_description=problem_description)
@@ -135,6 +181,7 @@ def train_one_problem(
     trainer.initialize(problem_state)
 
     total_loss = torch.tensor(0.)
+    average_delta_reward_percentage = 0.0
 
     for step_number in range(len(problem_description.locations)):
         model_couriers_logits = model.get_couriers_logits(problem_state=problem_state)
@@ -166,23 +213,56 @@ def train_one_problem(
 
         courier_choice_loss = criterion(model_couriers_logits, torch.tensor(trainer_courier_idx))
         location_choice_loss = criterion(model_locations_logits, torch.tensor(trainer_location_idx))
-        total_loss += (courier_choice_loss + location_choice_loss) * (trainer_reward - model_reward)
+
+        delta_reward = (trainer_reward - model_reward)
+        average_delta_reward_percentage += delta_reward / np.abs(trainer_reward)
+        total_loss += (courier_choice_loss + location_choice_loss) * delta_reward
 
         problem_state.update(trainer_action)
 
     total_loss.backward()
     optimizer.step()
 
-    return total_loss.item() / len(problem_description.locations)
+    average_problem_loss = total_loss.item() / len(problem_description.locations)
+    average_delta_reward_percentage = 100.0 * average_delta_reward_percentage / len(problem_description.locations)
+
+    return {
+        'mean_problem_loss': average_problem_loss,
+        'mean_delta_reward_percentage': average_delta_reward_percentage
+    }
+
+
+def get_and_plot_inference_examples(
+        model: ModelBase,
+        problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
+        suptitle: Optional[str] = None
+):
+    fig = plt.figure(figsize=(20, 6 * len(problem_description_samples)))
+    if suptitle:
+        fig.suptitle(suptitle, fontsize=22)
+
+    for batch_number, problem_description_batch in enumerate(problem_description_samples):
+        for i, problem_description in enumerate(problem_description_batch):
+            greedy_inference = GreedyInference(
+                model=model,
+                problem_description=problem_description
+            )
+            routes = greedy_inference.solve_problem()
+
+            plt.subplot(len(problem_description_samples), 3, 3 * batch_number + i + 1)
+            plt.title(f'Inference example {i + 1}', fontsize=15)
+            my_viz.plot_routes(problem_description, routes, ax=plt.gca(), legend=False)
 
 
 def train(
-        model: ModelBase,
+        model: Union[ModelBase, torch.nn.Module],
         trainer: ModelBase,
         criterion,
         optimizer: torch.optim.Optimizer,
         num_epochs: int,
-        dataset
+        dataset,
+        problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
+        checkpoint_path: Optional[Union[os.PathLike, str]] = None
 ):
     history = defaultdict(lambda: defaultdict(list))
 
@@ -190,26 +270,41 @@ def train(
         epoch_start_time = time.time()
 
         problem_losses = []
+        delta_reward_percentages = []
 
         for i, problem_description in tqdm(enumerate(dataset), total=len(dataset), position=0, leave=False):
-            problem_loss = train_one_problem(
+            train_epoch_info = train_one_problem(
                 model=model,
                 trainer=trainer,
                 criterion=criterion,
                 optimizer=optimizer,
                 problem_description=problem_description
             )
-            history['train']['problem_loss'].append(problem_loss)
-            problem_losses.append(problem_loss)
+            for key in ['mean_problem_loss']:
+                history['train'][key].append(train_epoch_info[key])
+
+            problem_losses.append(train_epoch_info['mean_problem_loss'])
+            delta_reward_percentages.append(train_epoch_info['mean_delta_reward_percentage'])
+
             if i + 1 == len(dataset):
                 break
 
-        history['train']['mean_epoch_loss'].append(np.mean(problem_losses))
-        history['train']['5th_percentile_epoch_loss'].append(np.quantile(problem_losses, 0.05))
-        history['train']['95th_percentile_epoch_loss'].append(np.quantile(problem_losses, 0.95))
+        if checkpoint_path:
+            torch.save(model.state_dict(), checkpoint_path)
+
+        history['train']['mean_loss'].append(np.mean(problem_losses))
+        history['train']['5th_percentile_loss'].append(np.quantile(problem_losses, 0.05))
+        history['train']['95th_percentile_loss'].append(np.quantile(problem_losses, 0.95))
+
+        history['train']['mean_delta_reward_percentage'].append(np.mean(delta_reward_percentages))
+        history['train']['5th_percentile_delta_reward_percentage'].append(np.quantile(delta_reward_percentages, 0.05))
+        history['train']['95th_percentile_delta_reward_percentage'].append(np.quantile(delta_reward_percentages, 0.95))
 
         clear_output()
         print(f'Epoch {epoch + 1} of {num_epochs} took {round(time.time() - epoch_start_time, 3)} seconds')
         plot_learning_curves(history)
+        get_and_plot_inference_examples(trainer, problem_description_samples, suptitle='Trainer inference example')
+        get_and_plot_inference_examples(model, problem_description_samples, suptitle='Model inference example')
+        plt.show()
 
     return history

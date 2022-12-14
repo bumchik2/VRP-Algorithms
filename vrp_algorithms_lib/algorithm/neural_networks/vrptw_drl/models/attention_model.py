@@ -164,7 +164,7 @@ class AttentionModel(ModelBase, nn.Module):
 
         for visited_location_id in problem_state.visited_location_ids:
             visited_location_idx = problem_state.location_id_to_idx[visited_location_id]
-            result[visited_location_idx] -= torch.tensor(1000.0, dtype=torch.float32)
+            result[visited_location_idx] -= torch.tensor(1000000.0, dtype=torch.float32)
 
         self.vehicles_state_information = None
         self.routes_embedding = None

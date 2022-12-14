@@ -15,7 +15,7 @@ class GreedyInference(BaseInference):
             courier_id = self.problem_state.idx_to_courier_id[courier_idx]
 
             # Choose the next location greedily
-            locations_logits = self.model.get_locations_logits(courier_idx, self.problem_state)
+            locations_logits = self.model.get_locations_logits(courier_id, self.problem_state)
             location_idx = torch.argmax(locations_logits).item()
             location_id = self.problem_state.idx_to_location_id[location_idx]
 

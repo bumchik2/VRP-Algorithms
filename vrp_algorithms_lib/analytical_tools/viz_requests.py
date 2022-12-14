@@ -8,7 +8,7 @@ def get_location_id_to_location(request):
     return {location['id']: location for location in request['locations']}
 
 
-def plot_route(request, route, ax=None, legend=True):
+def plot_route(request: dict, route, ax=None, legend=True):
     if ax is None:
         ax = plt.gca()
 
@@ -32,7 +32,7 @@ def plot_route(request, route, ax=None, legend=True):
         ax.legend()
 
 
-def plot_map(request, ax=None, legend=True):
+def plot_map(request: dict, ax=None, legend=True):
     need_to_show = (ax is None)
     if ax is None:
         plt.figure(figsize=(12, 8))
@@ -58,7 +58,7 @@ def plot_map(request, ax=None, legend=True):
         plt.show()
 
 
-def plot_routes(request, routes, title='', ax=None, legend=True):
+def plot_routes(request: dict, routes, title='', ax=None, legend=True):
     need_to_show = (ax is None)
     if ax is None:
         plt.figure(figsize=(12, 8))
@@ -104,7 +104,7 @@ def plot_penalty_history(penalty_history, skip_first_n=0, title='', ax=None, leg
         plt.show()
 
 
-def plot_checkpoints(request, checkpoints, legend=True):
+def plot_checkpoints(request: dict, checkpoints, legend=True):
     penalty_history_part = defaultdict(list)
 
     for i, checkpoint in enumerate(checkpoints):
