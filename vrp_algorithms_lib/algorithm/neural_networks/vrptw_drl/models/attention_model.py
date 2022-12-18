@@ -78,7 +78,6 @@ class AttentionModel(ModelBase, nn.Module):
         vehicles_state_information = []
 
         for courier_idx in range(len(problem_state.problem_description.couriers)):
-            courier_id = problem_state.idx_to_courier_id[courier_idx]
             vehicle_state = problem_state.vehicle_states[courier_idx]
 
             last_location_idx_in_route = problem_state.locations_idx[courier_idx][-1]

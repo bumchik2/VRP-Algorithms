@@ -78,6 +78,8 @@ class ProblemState(BaseModel):
         return TotalPenaltyCalculator().calculate(self.problem_description, extract_routes_from_problem_state(self))
 
     def get_reward(self, action: Action):
+        assert action.location_id in self.problem_description.locations
+
         max_penalty = 100
         if action.location_id in self.visited_location_ids:
             return -max_penalty

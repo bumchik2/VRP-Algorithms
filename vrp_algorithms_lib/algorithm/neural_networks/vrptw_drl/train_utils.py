@@ -183,8 +183,9 @@ def train_one_problem(
     trainer.initialize(problem_state)
 
     total_loss = torch.tensor(0.)
-    average_delta_reward_percentage = 0.0
     incorrect_location_choices = 0
+    total_delta_reward = 0
+    total_trainer_reward = 0
 
     for step_number in range(len(problem_description.locations)):
         model_couriers_logits = model.get_couriers_logits(problem_state=problem_state)
@@ -221,7 +222,8 @@ def train_one_problem(
         location_choice_loss = criterion(model_locations_logits, torch.tensor(trainer_location_idx))
 
         delta_reward = (trainer_reward - model_reward)
-        average_delta_reward_percentage += delta_reward / np.abs(trainer_reward)
+        total_delta_reward += delta_reward
+        total_trainer_reward += trainer_reward
         total_loss += (courier_choice_loss + location_choice_loss) * delta_reward
 
         problem_state.update(trainer_action)
@@ -231,12 +233,12 @@ def train_one_problem(
     optimizer.step()
 
     average_problem_loss = total_loss.item()
-    average_delta_reward_percentage = 100.0 * average_delta_reward_percentage / len(problem_description.locations)
+    delta_reward_percentage = 100.0 * total_delta_reward / total_trainer_reward
 
     return {
         'incorrect_location_choices_share': incorrect_location_choices / len(problem_description.locations),
         'mean_problem_loss': average_problem_loss,
-        'mean_delta_reward_percentage': average_delta_reward_percentage
+        'delta_reward_percentage': delta_reward_percentage
     }
 
 
@@ -303,7 +305,7 @@ def train(
 
             incorrect_locations_choices_share.append(train_epoch_info['incorrect_location_choices_share'])
             problem_losses.append(train_epoch_info['mean_problem_loss'])
-            delta_reward_percentages.append(train_epoch_info['mean_delta_reward_percentage'])
+            delta_reward_percentages.append(train_epoch_info['delta_reward_percentage'])
 
             if i + 1 == len(dataset):
                 break
