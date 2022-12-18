@@ -26,7 +26,24 @@ def test_get_locations_information(problem_state_for_tests, attention_model_with
     assert len(locations_information) == len(problem_state_for_tests.problem_description.locations) + 1
     assert locations_information[0][4].item() == 1, 'demand for the first location has to be 1'
     assert locations_information[1][4].item() == 1, 'demand for the second location has to be 1'
-    assert locations_information[2][4].item() == 0, 'demand for the depot has to be 0'
+    assert locations_information[-1][4].item() == 0, 'demand for the depot has to be 0'
+
+    depot = list(problem_state_for_tests.problem_description.depots.values())[0]
+    depot_lat = depot.lat
+    depot_lon = depot.lon
+    assert np.isclose(locations_information[-1][0].item(),
+                      attention_model_without_neural_network.normalize_lat(depot_lat))
+    assert np.isclose(locations_information[-1][1].item(),
+                      attention_model_without_neural_network.normalize_lon(depot_lon))
+
+    location_id = problem_state_for_tests.idx_to_location_id[0]
+    location = problem_state_for_tests.problem_description.locations[location_id]
+    location_lat = location.lat
+    location_lon = location.lon
+    assert np.isclose(locations_information[0][0].item(),
+                      attention_model_without_neural_network.normalize_lat(location_lat))
+    assert np.isclose(locations_information[0][1].item(),
+                      attention_model_without_neural_network.normalize_lon(location_lon))
 
 
 def test_get_vehicles_state_information(problem_state_for_tests, attention_model_without_neural_network):
