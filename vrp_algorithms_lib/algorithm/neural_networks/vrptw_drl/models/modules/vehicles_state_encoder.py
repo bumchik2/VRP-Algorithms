@@ -1,5 +1,7 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
+from vrp_algorithms_lib.algorithm.neural_networks.common.common_modules import LinearBlockWithNormalization
 
 
 class VehiclesStateEncoder(nn.Module):
@@ -13,15 +15,14 @@ class VehiclesStateEncoder(nn.Module):
         :param vehicles_state_information_dim: dimension for each vehicle
         :param vehicles_state_embedding_dim: hidden dimension
         """
-
         super().__init__()
 
-        self.fc = nn.Linear(vehicles_state_information_dim, vehicles_state_embedding_dim)
+        self.linear_block = LinearBlockWithNormalization(vehicles_state_information_dim, vehicles_state_embedding_dim)
 
     def forward(
             self,
             vehicles_state_information: torch.Tensor
     ):
         # Input size: vehicles_number x vehicles_state_information_dim
-        hidden = nn.ReLU()(self.fc(vehicles_state_information))  # vehicles_number x vehicles_state_embedding_dim
+        hidden = self.linear_block(vehicles_state_information)  # vehicles_number x vehicles_state_embedding_dim
         return hidden

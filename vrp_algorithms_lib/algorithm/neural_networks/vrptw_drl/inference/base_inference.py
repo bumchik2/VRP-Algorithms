@@ -5,6 +5,7 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import extra
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import initialize_problem_state
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Routes
+import torch
 
 
 class BaseInference:
@@ -25,6 +26,10 @@ class BaseInference:
     def _solve_problem(self):
         raise NotImplementedError
 
+    @torch.no_grad()
     def solve_problem(self) -> Routes:
+        if isinstance(self.model, torch.nn.Module):
+            self.model.eval()
+
         self._solve_problem()
         return extract_routes_from_problem_state(self.problem_state)

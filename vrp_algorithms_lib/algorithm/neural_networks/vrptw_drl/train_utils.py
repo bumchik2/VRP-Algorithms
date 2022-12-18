@@ -29,7 +29,7 @@ from vrp_algorithms_lib.problem.models import get_geodesic_time_matrix, get_eucl
 def plot_learning_curves(history):
     plt.figure(figsize=(20, 6))
 
-    plt.subplot(1, 3, 1)
+    plt.subplot(1, 4, 1)
     plt.title('Loss per epoch', fontsize=15)
     mean_epoch_loss_history = history['train']['mean_loss']
     plt.plot(range(1, len(mean_epoch_loss_history) + 1), mean_epoch_loss_history, label='mean')
@@ -41,7 +41,7 @@ def plot_learning_curves(history):
     plt.legend()
     plt.grid(visible=True)
 
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, 4, 2)
     plt.title('Delta reward percentage per epoch, %', fontsize=15)
     mean_delta_reward_percentage_history = history['train']['mean_delta_reward_percentage']
     plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), mean_delta_reward_percentage_history,
@@ -54,10 +54,16 @@ def plot_learning_curves(history):
     plt.legend()
     plt.grid(visible=True)
 
-    plt.subplot(1, 3, 3)
+    plt.subplot(1, 4, 3)
     plt.title('Problem loss', fontsize=15)
     problem_loss_history = history['train']['mean_problem_loss']
     plt.plot(range(1, len(problem_loss_history) + 1), problem_loss_history)
+    plt.grid(visible=True)
+
+    plt.subplot(1, 4, 4)
+    plt.title('Mean incorrect locations choices share', fontsize=15)
+    incorrect_location_choices = history['train']['mean_incorrect_location_choices_share']
+    plt.plot(range(1, len(incorrect_location_choices) + 1), incorrect_location_choices)
     plt.grid(visible=True)
 
 
@@ -233,7 +239,7 @@ def train_one_problem(
     optimizer.step()
 
     average_problem_loss = total_loss.item()
-    delta_reward_percentage = 100.0 * total_delta_reward / total_trainer_reward
+    delta_reward_percentage = 100.0 * total_delta_reward / np.abs(total_trainer_reward)
 
     return {
         'incorrect_location_choices_share': incorrect_location_choices / len(problem_description.locations),
@@ -266,10 +272,6 @@ def get_and_plot_inference_examples(
             plt.subplot(len(problem_description_samples), 3, 3 * batch_number + i + 1)
             plt.title(f'Inference example {i + 1}', fontsize=15)
             my_viz.plot_routes(problem_description, routes, ax=plt.gca(), legend=False)
-
-
-def print_epoch_metrics(history):
-    print('Average incorrect locations choices share:', history['train']['incorrect_location_choices_share'][-1])
 
 
 def train(
@@ -316,7 +318,7 @@ def train(
         if checkpoint_path:
             torch.save(model.state_dict(), checkpoint_path)
 
-        history['train']['incorrect_location_choices_share'].append(np.mean(incorrect_locations_choices_share))
+        history['train']['mean_incorrect_location_choices_share'].append(np.mean(incorrect_locations_choices_share))
 
         history['train']['mean_loss'].append(np.mean(problem_losses))
         history['train']['5th_percentile_loss'].append(np.quantile(problem_losses, 0.05))
@@ -328,7 +330,6 @@ def train(
 
         clear_output()
         print(f'Epoch {epoch + 1} of {num_epochs} took {round(time.time() - epoch_start_time, 3)} seconds')
-        print_epoch_metrics(history)
         plot_learning_curves(history)
         get_and_plot_inference_examples(trainer, problem_description_samples, suptitle='Trainer inference example')
         get_and_plot_inference_examples(model, problem_description_samples, suptitle='Model inference example')

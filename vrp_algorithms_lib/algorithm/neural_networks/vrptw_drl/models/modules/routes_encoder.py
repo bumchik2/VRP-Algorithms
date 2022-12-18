@@ -1,6 +1,9 @@
+from typing import List
+
 import torch
 import torch.nn as nn
-from typing import List
+
+from vrp_algorithms_lib.algorithm.neural_networks.common.common_modules import LinearBlockWithNormalization
 
 
 class RoutesEncoder(nn.Module):
@@ -16,7 +19,7 @@ class RoutesEncoder(nn.Module):
         """
         super().__init__()
 
-        self.fc = nn.Linear(graph_embedding_dim, routes_embedding_dim)
+        self.linear_block = LinearBlockWithNormalization(graph_embedding_dim, routes_embedding_dim)
 
     def forward(
             self,
@@ -36,5 +39,5 @@ class RoutesEncoder(nn.Module):
         routes_embedding: torch.Tensor = torch.cat(route_embeddings, dim=0)  # vehicles_number x T x graph_embedding_dim
         routes_embedding = torch.max(routes_embedding, dim=1)[0]  # vehicles_number x graph_embedding_dim
 
-        routes_embedding = nn.ReLU()(self.fc(routes_embedding))  # vehicles_number x routes_embedding_dim
+        routes_embedding = self.linear_block(routes_embedding)  # vehicles_number x routes_embedding_dim
         return routes_embedding

@@ -30,28 +30,28 @@ class LocationSelectionDecoder(nn.Module):
         self.fc = nn.Linear(locations_embedding_dim, 1)
 
     def forward(
-        self,
-        graph_embedding: torch.Tensor,
-        vehicles_state_information: torch.Tensor,
-        routes_embedding: torch.Tensor,
-        chosen_vehicle_idx: int,
-        last_node_for_the_chosen_vehicle_idx: int
+            self,
+            graph_embedding: torch.Tensor,
+            vehicles_state_information: torch.Tensor,
+            routes_embedding: torch.Tensor,
+            chosen_vehicle_idx: int,
+            last_node_for_the_chosen_vehicle_idx: int
     ):
         # graph embedding is of size number_of_locations x graph_embedding_dim
         # vehicles_state_information is of size number_of_vehicles x vehicles_state_information_dim
         number_of_locations = graph_embedding.size()[0]
-        vehicle_state_information = vehicles_state_information[chosen_vehicle_idx].\
+        vehicle_state_information = vehicles_state_information[chosen_vehicle_idx]. \
             unsqueeze(0).repeat(number_of_locations, 1)
 
         if last_node_for_the_chosen_vehicle_idx == -1:  # no nodes have been chosen yet
             last_node_embedding = torch.zeros(number_of_locations, 1)
         else:
-            last_node_embedding = graph_embedding[last_node_for_the_chosen_vehicle_idx].\
+            last_node_embedding = graph_embedding[last_node_for_the_chosen_vehicle_idx]. \
                 unsqueeze(0).repeat(number_of_locations, 1)
 
         # route_embedding was not passed into MHA in the original article.
         # However, we need to pass it, if we want to consider route geometry when choosing the next node
-        route_embedding = routes_embedding[chosen_vehicle_idx].\
+        route_embedding = routes_embedding[chosen_vehicle_idx]. \
             unsqueeze(0).repeat(number_of_locations, 1)
 
         # graph embedding with information about the chosen vehicle
