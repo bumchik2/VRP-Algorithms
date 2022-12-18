@@ -1,7 +1,7 @@
-from typing import List
-from typing import Union
-from typing import Set
 from typing import Dict
+from typing import List
+from typing import Set
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -11,6 +11,7 @@ from vrp_algorithms_lib.problem.models import LocationId
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Route
 from vrp_algorithms_lib.problem.models import Routes
+from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import TotalPenaltyCalculator
 
 
 class VehicleState(BaseModel):
@@ -50,7 +51,7 @@ class ProblemState(BaseModel):
         for vehicle_state in self.vehicle_states:
             if action.courier_id == vehicle_state.courier_id:
                 distance_matrix = self.problem_description.distance_matrix
-                if vehicle_state.total_distance == 0:
+                if vehicle_state.partial_route[-1] == list(self.problem_description.depots.keys())[0]:
                     delta_distance = distance_matrix.depots_to_locations_distances[
                         vehicle_state.partial_route[-1]][action.location_id]
                 else:
@@ -59,10 +60,35 @@ class ProblemState(BaseModel):
                 return delta_distance
         raise ValueError(f'Unexpected Error in get_delta_distance: courier with id {action.courier_id} not found')
 
+    def _undo_action(self, action: Action):
+        assert action.location_id in self.visited_location_ids, f'{action.location_id} was not visited before'
+        self.visited_location_ids.remove(action.location_id)
+
+        for vehicle_state in self.vehicle_states:
+            current_courier_idx = self.courier_id_to_idx[vehicle_state.courier_id]
+            vehicle_state.partial_route.pop()
+            self.locations_idx[current_courier_idx].pop()
+
+        for vehicle_state in self.vehicle_states:
+            if action.courier_id == vehicle_state.courier_id:
+                delta_distance = self.get_delta_distance(action)
+                vehicle_state.total_distance -= delta_distance
+
+    def get_current_penalty(self):
+        return TotalPenaltyCalculator().calculate(self.problem_description, extract_routes_from_problem_state(self))
+
     def get_reward(self, action: Action):
-        delta_distance = self.get_delta_distance(action)
-        # TODO: support for other penalties
-        return -delta_distance * self.problem_description.penalties.distance_penalty_multiplier
+        max_penalty = 100
+        if action.location_id in self.visited_location_ids:
+            return -max_penalty
+
+        current_penalty = self.get_current_penalty()
+        self.update(action)
+        new_penalty = self.get_current_penalty()
+        self._undo_action(action)
+        delta_penalty = new_penalty - current_penalty
+
+        return -min(delta_penalty, max_penalty)
 
     def update(self, action: Action):
         assert action.location_id not in self.visited_location_ids, f'{action.location_id} was visited before'

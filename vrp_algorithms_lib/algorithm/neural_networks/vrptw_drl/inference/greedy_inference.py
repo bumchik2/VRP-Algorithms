@@ -16,6 +16,11 @@ class GreedyInference(BaseInference):
 
             # Choose the next location greedily
             locations_logits = self.model.get_locations_logits(courier_id, self.problem_state)
+
+            for visited_location_id in self.problem_state.visited_location_ids:
+                visited_location_idx = self.problem_state.location_id_to_idx[visited_location_id]
+                locations_logits[visited_location_idx] -= torch.tensor(1e6, dtype=torch.float32)
+
             location_idx = torch.argmax(locations_logits).item()
             location_id = self.problem_state.idx_to_location_id[location_idx]
 

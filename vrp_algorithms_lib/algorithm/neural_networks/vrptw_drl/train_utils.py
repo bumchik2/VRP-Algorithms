@@ -167,12 +167,14 @@ class SimpleDataset(data_utils.Dataset):
 
 
 def train_one_problem(
-        model: ModelBase,
+        model: Union[ModelBase, torch.nn.Module],
         trainer: ModelBase,
         criterion,
         optimizer: torch.optim.Optimizer,
         problem_description: ProblemDescription
 ) -> Dict[str, Any]:
+    model.train()
+
     optimizer.zero_grad()
 
     problem_state: ProblemState = initialize_problem_state(problem_description=problem_description)
@@ -182,6 +184,7 @@ def train_one_problem(
 
     total_loss = torch.tensor(0.)
     average_delta_reward_percentage = 0.0
+    incorrect_location_choices = 0
 
     for step_number in range(len(problem_description.locations)):
         model_couriers_logits = model.get_couriers_logits(problem_state=problem_state)
@@ -205,6 +208,9 @@ def train_one_problem(
         trainer_location_idx = torch.argmax(trainer_locations_logits).item()
         trainer_location_id = problem_state.idx_to_location_id[trainer_location_idx]
 
+        if model_location_id in problem_state.visited_location_ids:
+            incorrect_location_choices += 1
+
         model_action = Action(courier_id=model_courier_id, location_id=model_location_id)
         trainer_action = Action(courier_id=trainer_courier_id, location_id=trainer_location_id)
 
@@ -220,23 +226,28 @@ def train_one_problem(
 
         problem_state.update(trainer_action)
 
+    total_loss /= len(problem_description.locations)
     total_loss.backward()
     optimizer.step()
 
-    average_problem_loss = total_loss.item() / len(problem_description.locations)
+    average_problem_loss = total_loss.item()
     average_delta_reward_percentage = 100.0 * average_delta_reward_percentage / len(problem_description.locations)
 
     return {
+        'incorrect_location_choices_share': incorrect_location_choices / len(problem_description.locations),
         'mean_problem_loss': average_problem_loss,
         'mean_delta_reward_percentage': average_delta_reward_percentage
     }
 
 
+@torch.no_grad()
 def get_and_plot_inference_examples(
-        model: ModelBase,
+        model: Union[ModelBase, torch.nn.Module],
         problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
         suptitle: Optional[str] = None
 ):
+    model.eval()
+
     fig = plt.figure(figsize=(20, 6 * len(problem_description_samples)))
     if suptitle:
         fig.suptitle(suptitle, fontsize=22)
@@ -254,6 +265,10 @@ def get_and_plot_inference_examples(
             my_viz.plot_routes(problem_description, routes, ax=plt.gca(), legend=False)
 
 
+def print_epoch_metrics(history):
+    print('Average incorrect locations choices share:', history['train']['incorrect_location_choices_share'][-1])
+
+
 def train(
         model: Union[ModelBase, torch.nn.Module],
         trainer: ModelBase,
@@ -262,7 +277,8 @@ def train(
         num_epochs: int,
         dataset,
         problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
-        checkpoint_path: Optional[Union[os.PathLike, str]] = None
+        checkpoint_path: Optional[Union[os.PathLike, str]] = None,
+        lr_scheduler=None
 ):
     history = defaultdict(lambda: defaultdict(list))
 
@@ -271,6 +287,7 @@ def train(
 
         problem_losses = []
         delta_reward_percentages = []
+        incorrect_locations_choices_share = []
 
         for i, problem_description in tqdm(enumerate(dataset), total=len(dataset), position=0, leave=False):
             train_epoch_info = train_one_problem(
@@ -283,14 +300,20 @@ def train(
             for key in ['mean_problem_loss']:
                 history['train'][key].append(train_epoch_info[key])
 
+            incorrect_locations_choices_share.append(train_epoch_info['incorrect_location_choices_share'])
             problem_losses.append(train_epoch_info['mean_problem_loss'])
             delta_reward_percentages.append(train_epoch_info['mean_delta_reward_percentage'])
 
             if i + 1 == len(dataset):
                 break
 
+        if lr_scheduler is not None:
+            lr_scheduler.step()
+
         if checkpoint_path:
             torch.save(model.state_dict(), checkpoint_path)
+
+        history['train']['incorrect_location_choices_share'].append(np.mean(incorrect_locations_choices_share))
 
         history['train']['mean_loss'].append(np.mean(problem_losses))
         history['train']['5th_percentile_loss'].append(np.quantile(problem_losses, 0.05))
@@ -302,6 +325,7 @@ def train(
 
         clear_output()
         print(f'Epoch {epoch + 1} of {num_epochs} took {round(time.time() - epoch_start_time, 3)} seconds')
+        print_epoch_metrics(history)
         plot_learning_curves(history)
         get_and_plot_inference_examples(trainer, problem_description_samples, suptitle='Trainer inference example')
         get_and_plot_inference_examples(model, problem_description_samples, suptitle='Model inference example')
