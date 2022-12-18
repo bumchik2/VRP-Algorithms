@@ -246,7 +246,8 @@ def get_and_plot_inference_examples(
         problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
         suptitle: Optional[str] = None
 ):
-    model.eval()
+    if isinstance(model, torch.nn.Module):
+        model.eval()
 
     fig = plt.figure(figsize=(20, 6 * len(problem_description_samples)))
     if suptitle:
