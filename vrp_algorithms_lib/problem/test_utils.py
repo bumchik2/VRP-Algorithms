@@ -8,8 +8,10 @@ def problem_description_for_tests() -> models.ProblemDescription:
     depots = {
         models.DepotId('depot_1'): models.Depot.parse_obj({
             'id': 'depot_1',
-            'lat': 55.752908,
-            'lon': 37.624524
+            'point': {
+                'lat': 55.752908,
+                'lon': 37.624524
+            }
         })
     }
 
@@ -17,16 +19,20 @@ def problem_description_for_tests() -> models.ProblemDescription:
         models.LocationId('location_1'): models.Location.parse_obj({
             'id': 'location_1',
             'depot_id': 'depot_1',
-            'lat': 55.742940,
-            'lon': 37.474298,
+            'point': {
+                'lat': 55.742940,
+                'lon': 37.474298,
+            },
             'time_window_start_s': 0,
             'time_window_end_s': 86400
         }),
         models.LocationId('location_2'): models.Location.parse_obj({
             'id': 'location_2',
             'depot_id': 'depot_1',
-            'lat': 55.746817,
-            'lon': 37.773769,
+            'point': {
+                'lat': 55.746817,
+                'lon': 37.773769,
+            },
             'time_window_start_s': 0,
             'time_window_end_s': 86400
         })
@@ -35,6 +41,9 @@ def problem_description_for_tests() -> models.ProblemDescription:
     couriers = {
         'courier_1': models.Courier.parse_obj({
             'id': 'courier_1'
+        }),
+        'courier_2': models.Courier.parse_obj({
+            'id': 'courier_2'
         })
     }
 
@@ -54,4 +63,19 @@ def problem_description_for_tests() -> models.ProblemDescription:
         penalties=penalties,
         distance_matrix=distance_matrix,
         time_matrix=time_matrix
+    )
+
+
+@pytest.fixture
+def routes_for_tests() -> models.Routes:
+    return models.Routes(
+        routes=[
+            models.Route(
+                vehicle_id='courier_1',
+                location_ids=[
+                    'location_1',
+                    'location_2'
+                ]
+            )
+        ]
     )

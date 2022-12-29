@@ -1,16 +1,19 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import torch
 
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import CourierId
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Routes
 
 
 class ModelBase(ABC):
     @abstractmethod
     def initialize(
             self,
-            problem_state: ProblemState
+            problem_state: ProblemState,
+            routes: Optional[Routes]
     ):
         raise NotImplementedError
 

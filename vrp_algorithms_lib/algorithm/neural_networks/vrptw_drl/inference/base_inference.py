@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Optional
 
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import extract_routes_from_problem_state
@@ -13,6 +14,7 @@ class BaseInference:
             self,
             model: ModelBase,
             problem_description: ProblemDescription,
+            routes: Optional[Routes]
     ):
         self.model = model
 
@@ -20,7 +22,7 @@ class BaseInference:
             problem_description=problem_description,
         )
 
-        self.model.initialize(self.problem_state)
+        self.model.initialize(self.problem_state, routes)
 
     @abstractmethod
     def _solve_problem(self):

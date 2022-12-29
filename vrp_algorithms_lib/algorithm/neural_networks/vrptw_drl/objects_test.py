@@ -2,6 +2,7 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.test_utils import pr
 from vrp_algorithms_lib.problem.test_utils import problem_description_for_tests
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState,\
     Action, DepotId, CourierId, LocationId, extract_routes_from_problem_state, Routes
+import numpy as np
 
 
 def test_problem_state_init(problem_state_for_tests):
@@ -47,4 +48,5 @@ def test_reward(problem_state_for_tests):
     problem_state_for_tests.update(action_1)
 
     action_2 = Action(location_id=LocationId('location_2'), courier_id=CourierId('courier_1'))
-    assert problem_state_for_tests.get_reward(action=action_2) == -100
+    expected_reward = -149.98911231771075
+    assert np.isclose(problem_state_for_tests.get_reward(action=action_2), expected_reward)

@@ -10,9 +10,7 @@ from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.stats as sps
 import torch.optim
-import torch.utils.data as data_utils
 from IPython.display import clear_output
 from tqdm import tqdm
 
@@ -21,9 +19,11 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.greedy_inf
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState, Action, \
     initialize_problem_state
-from vrp_algorithms_lib.problem.models import ProblemDescription, Courier, Location, Depot, DepotId, CourierId, \
-    LocationId, Penalties
-from vrp_algorithms_lib.problem.models import get_geodesic_time_matrix, get_euclidean_distance_matrix
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.dataset_with_prepared_solutions import \
+    DatasetWithPreparedSolutions
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.simple_dataset import SimpleDataset
+from vrp_algorithms_lib.problem.models import ProblemDescription
+from vrp_algorithms_lib.problem.models import Routes
 
 
 def plot_learning_curves(history):
@@ -67,117 +67,13 @@ def plot_learning_curves(history):
     plt.grid(visible=True)
 
 
-def get_random_problem_description(
-        num_vehicles: int,
-        num_locations: int
-) -> ProblemDescription:
-    mean_lat = 55.752572
-    mean_lon = 37.622269
-    lat_distribution = sps.uniform(loc=mean_lat - 0.15, scale=0.3)
-    lon_distribution = sps.uniform(loc=mean_lon - 0.15, scale=0.3)
-
-    depots: Dict[DepotId, Depot] = {
-        DepotId('depot 1'): Depot(
-            id=DepotId('depot 1'),
-            lat=lat_distribution.rvs(),
-            lon=lon_distribution.rvs()
-        )
-    }
-
-    locations: Dict[LocationId, Location] = {
-        LocationId(f'location {i + 1}'): Location(
-            id=LocationId(f'location {i + 1}'),
-            depot_id=DepotId('depot 1'),
-            lat=lat_distribution.rvs(),
-            lon=lon_distribution.rvs(),
-            time_window_start_s=0,
-            time_window_end_s=0
-        )
-        for i in range(num_locations)
-    }
-
-    couriers: Dict[CourierId, Courier] = {
-        CourierId(f'courier {i + 1}'): Courier(
-            id=CourierId(f'courier {i + 1}')
-        )
-        for i in range(num_vehicles)
-    }
-
-    penalties = Penalties(
-        distance_penalty_multiplier=8,
-        global_proximity_factor=0,
-        out_of_time_penalty_per_minute=0
-    )
-
-    distance_matrix = get_euclidean_distance_matrix(depots=depots, locations=locations)
-    time_matrix = get_geodesic_time_matrix(depots=depots, locations=locations, distance_matrix=distance_matrix)
-
-    problem_description = ProblemDescription(
-        depots=depots,
-        locations=locations,
-        couriers=couriers,
-        penalties=penalties,
-        distance_matrix=distance_matrix,
-        time_matrix=time_matrix
-    )
-
-    return problem_description
-
-
-class SimpleDataset(data_utils.Dataset):
-    def __init__(
-            self,
-            num_vehicles: Optional[int] = None,
-            min_vehicles: Optional[int] = None,
-            max_vehicles: Optional[int] = None,
-            num_locations: Optional[int] = None,
-            min_locations: Optional[int] = None,
-            max_locations: Optional[int] = None,
-            dataset_size: int = 100
-    ):
-        super().__init__()
-
-        if min_vehicles is not None:
-            assert max_vehicles is not None and num_vehicles is None
-        else:
-            assert num_vehicles is not None
-        if min_locations is not None:
-            assert max_locations is not None and num_locations is None
-        else:
-            assert num_locations is not None
-
-        self.num_vehicles = num_vehicles
-        self.min_vehicles = min_vehicles
-        self.max_vehicles = max_vehicles
-
-        self.num_locations = num_locations
-        self.min_locations = min_locations
-        self.max_locations = max_locations
-
-        self.dataset_size = dataset_size
-
-    def __len__(self):
-        return self.dataset_size
-
-    def __getitem__(self, idx: int):
-        num_vehicles = self.num_vehicles if self.num_vehicles is not None else sps.randint(
-            self.min_vehicles, self.max_vehicles + 1).rvs()
-        num_locations = self.num_locations if self.num_locations is not None else sps.randint(
-            self.min_locations, self.max_locations + 1).rvs()
-
-        random_problem_state = get_random_problem_description(
-            num_vehicles=num_vehicles,
-            num_locations=num_locations
-        )
-        return random_problem_state
-
-
 def train_one_problem(
         model: Union[ModelBase, torch.nn.Module],
         trainer: ModelBase,
         criterion,
         optimizer: torch.optim.Optimizer,
-        problem_description: ProblemDescription
+        problem_description: ProblemDescription,
+        routes: Optional[Routes]
 ) -> Dict[str, Any]:
     model.train()
 
@@ -185,8 +81,8 @@ def train_one_problem(
 
     problem_state: ProblemState = initialize_problem_state(problem_description=problem_description)
 
-    model.initialize(problem_state)
-    trainer.initialize(problem_state)
+    model.initialize(problem_state, None)
+    trainer.initialize(problem_state, routes)
 
     total_loss = torch.tensor(0.)
     incorrect_location_choices = 0
@@ -251,7 +147,7 @@ def train_one_problem(
 @torch.no_grad()
 def get_and_plot_inference_examples(
         model: Union[ModelBase, torch.nn.Module],
-        problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
+        problem_description_samples: List[List[Tuple[ProblemDescription, Routes]]],
         suptitle: Optional[str] = None
 ):
     if isinstance(model, torch.nn.Module):
@@ -262,10 +158,11 @@ def get_and_plot_inference_examples(
         fig.suptitle(suptitle, fontsize=22)
 
     for batch_number, problem_description_batch in enumerate(problem_description_samples):
-        for i, problem_description in enumerate(problem_description_batch):
+        for i, (problem_description, routes) in enumerate(problem_description_batch):
             greedy_inference = GreedyInference(
                 model=model,
-                problem_description=problem_description
+                problem_description=problem_description,
+                routes=routes
             )
             routes = greedy_inference.solve_problem()
 
@@ -280,8 +177,8 @@ def train(
         criterion,
         optimizer: torch.optim.Optimizer,
         num_epochs: int,
-        dataset,
-        problem_description_samples: List[Tuple[ProblemDescription, ProblemDescription, ProblemDescription]],
+        dataset: Union[SimpleDataset, DatasetWithPreparedSolutions],
+        problem_description_samples: List[List[Tuple[ProblemDescription, Routes]]],
         checkpoint_path: Optional[Union[os.PathLike, str]] = None,
         lr_scheduler=None
 ):
@@ -294,13 +191,14 @@ def train(
         delta_reward_percentages = []
         incorrect_locations_choices_share = []
 
-        for i, problem_description in tqdm(enumerate(dataset), total=len(dataset), position=0, leave=False):
+        for i, (problem_description, routes) in tqdm(enumerate(dataset), total=len(dataset), position=0, leave=False):
             train_epoch_info = train_one_problem(
                 model=model,
                 trainer=trainer,
                 criterion=criterion,
                 optimizer=optimizer,
-                problem_description=problem_description
+                problem_description=problem_description,
+                routes=routes
             )
             for key in ['mean_problem_loss']:
                 history['train'][key].append(train_epoch_info[key])

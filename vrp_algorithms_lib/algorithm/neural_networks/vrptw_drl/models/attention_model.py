@@ -1,4 +1,5 @@
 from typing import List
+from typing import Optional
 
 import numpy as np
 import torch
@@ -7,7 +8,9 @@ import torch.nn as nn
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.attention_neural_network import \
     AttentionNeuralNetwork
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState, CourierId
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import CourierId
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Routes
 
 
 class AttentionModel(ModelBase, nn.Module):
@@ -43,8 +46,8 @@ class AttentionModel(ModelBase, nn.Module):
 
             time_window_start_s_normalized = location.time_window_start_s / 86400.0
             time_window_end_s_normalized = location.time_window_end_s / 86400.0
-            normalized_lat = self.normalize_lat(location.lat)
-            normalized_lon = self.normalize_lon(location.lon)
+            normalized_lat = self.normalize_lat(location.point.lat)
+            normalized_lon = self.normalize_lon(location.point.lon)
             location_requires_visit = (location_id not in problem_state.visited_location_ids)
 
             location_information = [
@@ -57,8 +60,8 @@ class AttentionModel(ModelBase, nn.Module):
             locations_information.append(location_information)
 
         depot = list(problem_state.problem_description.depots.values())[0]
-        depot_normalized_lat = self.normalize_lat(depot.lat)
-        depot_normalized_lon = self.normalize_lon(depot.lon)
+        depot_normalized_lat = self.normalize_lat(depot.point.lat)
+        depot_normalized_lon = self.normalize_lon(depot.point.lon)
         depot_information = [
             depot_normalized_lat,
             depot_normalized_lon,
@@ -83,13 +86,13 @@ class AttentionModel(ModelBase, nn.Module):
             last_location_idx_in_route = problem_state.locations_idx[courier_idx][-1]
             if last_location_idx_in_route == len(problem_state.problem_description.locations):  # depot idx
                 depot = list(problem_state.problem_description.depots.values())[0]
-                last_point_lat = depot.lat
-                last_point_lon = depot.lon
+                last_point_lat = depot.point.lat
+                last_point_lon = depot.point.lon
             else:
                 last_location_id_in_route = problem_state.idx_to_location_id[last_location_idx_in_route]
                 last_location_in_route = problem_state.problem_description.locations[last_location_id_in_route]
-                last_point_lat = last_location_in_route.lat
-                last_point_lon = last_location_in_route.lon
+                last_point_lat = last_location_in_route.point.lat
+                last_point_lon = last_location_in_route.point.lon
 
             normalized_last_point_lat = self.normalize_lat(last_point_lat)
             normalized_last_point_lon = self.normalize_lon(last_point_lon)
@@ -121,12 +124,13 @@ class AttentionModel(ModelBase, nn.Module):
 
     def initialize(
             self,
-            problem_state: ProblemState
+            problem_state: ProblemState,
+            routes: Optional[Routes]
     ):
         self.locations_mean_lat = np.mean(
-            [location.lat for location in problem_state.problem_description.locations.values()])
+            [location.point.lat for location in problem_state.problem_description.locations.values()])
         self.locations_mean_lon = np.mean(
-            [location.lon for location in problem_state.problem_description.locations.values()])
+            [location.point.lon for location in problem_state.problem_description.locations.values()])
 
     @staticmethod
     def get_locations_idx(
@@ -171,13 +175,6 @@ class AttentionModel(ModelBase, nn.Module):
             chosen_vehicle_idx=courier_idx,
             last_node_for_the_chosen_vehicle_idx=locations_idx[courier_idx][-1]
         )
-
-        """ 
-        The commented code below could be used for masking locations that have been visited before
-        for visited_location_id in problem_state.visited_location_ids:
-            visited_location_idx = problem_state.location_id_to_idx[visited_location_id]
-            result[visited_location_idx] -= torch.tensor(1000000.0, dtype=torch.float32)
-        """
 
         self.vehicles_state_information = None
         self.routes_embedding = None

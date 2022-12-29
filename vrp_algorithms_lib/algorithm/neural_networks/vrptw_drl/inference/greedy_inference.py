@@ -1,9 +1,11 @@
+from typing import Optional
+
 import torch
 
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.base_inference import BaseInference
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Action
-from vrp_algorithms_lib.problem.models import ProblemDescription
+from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
 
 
 class GreedyInference(BaseInference):
@@ -11,8 +13,9 @@ class GreedyInference(BaseInference):
             self,
             model: ModelBase,
             problem_description: ProblemDescription,
+            routes: Optional[Routes]
     ):
-        super().__init__(model, problem_description)
+        super().__init__(model, problem_description, routes)
         self.courier_logits_sum = 0
         self.locations_logits_sum = 0
 

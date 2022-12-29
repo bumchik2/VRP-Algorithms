@@ -16,7 +16,7 @@ class GreedyAlgorithm(BaseAlgorithm):
 
         routes = Routes(routes=[])
 
-        location_points: List[List[float]] = [[location.lon, location.lat] for location in
+        location_points: List[List[float]] = [[location.point.lon, location.point.lat] for location in
                                               problem_description.locations.values()]
         clusters = self.clusterizer.clusterize(location_points, len(problem_description.couriers))
 

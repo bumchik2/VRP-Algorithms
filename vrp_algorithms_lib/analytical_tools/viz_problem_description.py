@@ -15,11 +15,11 @@ def plot_route(problem_description: ProblemDescription, route: Route, ax=None, l
     wrapped_depot = list(problem_description.depots.values())
     assert len(wrapped_depot) == 1
     depot = wrapped_depot[0]
-    depot_lon = depot.lon
-    depot_lat = depot.lat
+    depot_lon = depot.point.lon
+    depot_lat = depot.point.lat
 
-    lons = [problem_description.locations[location_id].lon for location_id in route.location_ids]
-    lats = [problem_description.locations[location_id].lat for location_id in route.location_ids]
+    lons = [problem_description.locations[location_id].point.lon for location_id in route.location_ids]
+    lats = [problem_description.locations[location_id].point.lat for location_id in route.location_ids]
 
     ax.plot([depot_lon] + lons, [depot_lat] + lats, label=route.vehicle_id)
 
@@ -40,12 +40,12 @@ def plot_map(problem_description: ProblemDescription, ax=None, legend: bool = Tr
     ax.set_xlabel('longitude', fontsize=14)
     ax.set_ylabel('latitude', fontsize=14)
 
-    lons = [location.lon for location in problem_description.locations.values()]
-    lats = [location.lat for location in problem_description.locations.values()]
+    lons = [location.point.lon for location in problem_description.locations.values()]
+    lats = [location.point.lat for location in problem_description.locations.values()]
     ax.scatter(lons, lats, c='r', s=10)
 
-    depots_lons = [depot.lon for depot in problem_description.depots.values()]
-    depots_lats = [depot.lat for depot in problem_description.depots.values()]
+    depots_lons = [depot.point.lon for depot in problem_description.depots.values()]
+    depots_lats = [depot.point.lat for depot in problem_description.depots.values()]
     ax.scatter(depots_lons, depots_lats, c='b', s=100, marker='*', label='depots')
 
     ax.grid(visible=True)

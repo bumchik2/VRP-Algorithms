@@ -1,6 +1,6 @@
 from typing import Dict
-from typing import NewType
 from typing import List
+from typing import NewType
 
 from pydantic import BaseModel
 
@@ -11,10 +11,14 @@ DepotId = NewType('DepotId', str)
 CourierId = NewType('CourierId', str)
 
 
-class Depot(BaseModel):
-    id: DepotId
+class Point(BaseModel):
     lat: float
     lon: float
+
+
+class Depot(BaseModel):
+    id: DepotId
+    point: Point
 
 
 class Courier(BaseModel):
@@ -24,8 +28,7 @@ class Courier(BaseModel):
 class Location(BaseModel):
     id: LocationId
     depot_id: DepotId
-    lat: float
-    lon: float
+    point: Point
     time_window_start_s: float
     time_window_end_s: float
 
@@ -75,15 +78,16 @@ def get_euclidean_distance_matrix(
         depots_to_locations_distances[depot.id] = {}
         for location in locations.values():
             depots_to_locations_distances[depot.id][location.id] = get_euclidean_distance_km(
-                lat_1=depot.lat, lon_1=depot.lon, lat_2=location.lat, lon_2=location.lon
+                lat_1=depot.point.lat, lon_1=depot.point.lon, lat_2=location.point.lat, lon_2=location.point.lon
             )
 
     for location_1 in locations.values():
         locations_to_locations_distances[location_1.id] = {}
         for location_2 in locations.values():
-                locations_to_locations_distances[location_1.id][location_2.id] = get_euclidean_distance_km(
-                    lat_1=location_1.lat, lon_1=location_1.lon, lat_2=location_2.lat, lon_2=location_2.lon
-                )
+            locations_to_locations_distances[location_1.id][location_2.id] = get_euclidean_distance_km(
+                lat_1=location_1.point.lat, lon_1=location_1.point.lon,
+                lat_2=location_2.point.lat, lon_2=location_2.point.lon
+            )
 
     return DistanceMatrix(
         depots_to_locations_distances=depots_to_locations_distances,

@@ -19,6 +19,13 @@ class VehicleState(BaseModel):
     total_distance: float
     partial_route: List[Union[DepotId, LocationId]]
 
+    def get_filtered_partial_route(self) -> List[LocationId]:
+        location_ids = []
+        for i in range(len(self.partial_route) - 1):
+            if self.partial_route[i + 1] != self.partial_route[i]:
+                location_ids.append(self.partial_route[i + 1])
+        return location_ids
+
 
 def initialize_vehicle_state(
         courier_id: CourierId,
@@ -82,7 +89,7 @@ class ProblemState(BaseModel):
 
         max_penalty = 200
         if action.location_id in self.visited_location_ids:
-            return -max_penalty
+            return -max_penalty * 1.5  # Choosing incorrect location is the worst thing possible
 
         current_penalty = self.get_current_penalty()
         self.update(action)
@@ -147,12 +154,7 @@ def extract_routes_from_problem_state(problem_state: ProblemState) -> Routes:
     routes = []
 
     for vehicle_state in problem_state.vehicle_states:
-        location_ids: List[LocationId] = []
-        route = vehicle_state.partial_route
-        for i in range(len(route) - 1):
-            if route[i + 1] != route[i]:
-                location_ids.append(route[i + 1])
-
+        location_ids: List[LocationId] = vehicle_state.get_filtered_partial_route()
         routes.append(Route(
             vehicle_id=vehicle_state.courier_id,
             location_ids=location_ids

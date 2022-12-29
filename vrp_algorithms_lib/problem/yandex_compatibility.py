@@ -1,10 +1,70 @@
+import os
+import subprocess
+from typing import List
+from typing import Optional
+
 import vrp_algorithms_lib.common_tools.date_helpers as date_helpers
-from vrp_algorithms_lib.problem.models import ProblemDescription
+import vrp_algorithms_lib.common_tools.file_utils as file_utils
+from vrp_algorithms_lib.problem.models import ProblemDescription, Routes, Route, CourierId
 
 
-def solver_request_to_problem_description(solver_request: dict) -> ProblemDescription:
-    # TODO (should be done via c++ script `save_problem_description_to_json`)
-    pass
+def solver_request_to_problem_description(
+        path_to_save_problem_description_to_json_binary: str,
+        tmp_path_to_request: str,
+        tmp_path_to_problem_description: str,
+        solver_request: Optional[dict] = None,
+        remove_tmp_request: bool = True,
+        remove_tmp_problem_description: bool = True,
+        verbose: bool = True
+) -> ProblemDescription:
+    if solver_request is not None:
+        file_utils.save_json(solver_request, tmp_path_to_request)
+
+    args = [
+        f'./{path_to_save_problem_description_to_json_binary}',
+        tmp_path_to_request,
+        tmp_path_to_problem_description,
+    ]
+
+    args = [str(arg) for arg in args]
+    if verbose:
+        print(f'Running the following command: {args}')
+    subprocess.check_output(args)
+
+    if remove_tmp_request:
+        os.remove(tmp_path_to_request)
+    if remove_tmp_problem_description:
+        os.remove(tmp_path_to_problem_description)
+
+    problem_description_json = file_utils.read_json(tmp_path_to_problem_description)
+    problem_description = ProblemDescription.parse_obj(problem_description_json)
+    return problem_description
+
+
+def solver_result_to_routes(
+        solver_result: dict,
+) -> Routes:
+    routes: List[Route] = []
+
+    for route in solver_result['result']['routes']:
+        location_ids = []
+        for node in route['route']:
+            if node['node']['type'] == 'depot':
+                continue
+            location_ids.append(node['node']['value']['id'])
+
+        new_route = Route(
+            location_ids=location_ids,
+            vehicle_id=CourierId(route['vehicle_id'])
+        )
+
+        routes.append(new_route)
+
+    result = Routes(
+        routes=routes
+    )
+
+    return result
 
 
 def problem_description_to_solver_request(problem_description: ProblemDescription) -> dict:
@@ -18,7 +78,7 @@ def transform_request(
         distance_penalty: float,
         global_proximity_factor: float,
         solver_temperature: int,
-        solver_time_limit_s: int = 60
+        solver_time_limit_s: Optional[int] = None
 ) -> dict:
     """
     Remove fields that are not needed
@@ -91,8 +151,10 @@ def transform_request(
         'task_count': 1,
         'temperature': solver_temperature,
         'global_proximity_factor': global_proximity_factor,
-        'solver_time_limit_s': solver_time_limit_s
     }
+
+    if solver_time_limit_s is not None:
+        options['solver_time_limit_s'] = solver_time_limit_s
 
     new_request = {
         'locations': locations,

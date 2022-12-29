@@ -1,26 +1,38 @@
+from typing import Optional
+
 import numpy as np
 import torch
 
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState, Action
-from vrp_algorithms_lib.problem.models import CourierId
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Action
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import CourierId
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Routes
 
 
 class GreedyModel(ModelBase):
     def initialize(
             self,
-            problem_state: ProblemState
-    ) -> torch.Tensor:
+            problem_state: ProblemState,
+            routes: Optional[Routes]
+    ):
         pass
 
-    def _get_couriers_logits(self, problem_state: ProblemState) -> torch.tensor:
+    def _get_couriers_logits(
+            self,
+            problem_state: ProblemState
+    ) -> torch.tensor:
         # Choose random courier
         couriers_number = len(problem_state.problem_description.couriers)
         result = -torch.ones(couriers_number) * 1000.0
         result[np.random.randint(low=0, high=couriers_number)] = 1.
         return result
 
-    def _get_locations_logits(self, courier_id: CourierId, problem_state: ProblemState) -> torch.tensor:
+    def _get_locations_logits(
+            self,
+            courier_id: CourierId,
+            problem_state: ProblemState
+    ) -> torch.tensor:
         # Choose the closest location to the courier_id, that has not been visited yet
         min_delta_distance = 10 ** 9
         closest_location_idx = None
