@@ -1,8 +1,8 @@
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Set
 from typing import Union
-from typing import Optional
 
 from pydantic import BaseModel
 

@@ -1,6 +1,7 @@
 import os
 import time
 from collections import defaultdict
+from enum import Enum
 from typing import Any
 from typing import Dict
 from typing import List
@@ -25,6 +26,11 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.dataset_with_p
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.simple_dataset import SimpleDataset
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Routes
+
+
+class TrainMode(Enum):
+    PENALTY_MODE = 'penalty_mode'
+    RECONSTRUCTION_MODE = 'reconstruction_mode'
 
 
 def plot_learning_curves(history):
@@ -75,7 +81,8 @@ def train_one_problem(
         optimizer: torch.optim.Optimizer,
         problem_description: ProblemDescription,
         routes: Optional[Routes],
-        device: torch.device
+        device: torch.device,
+        train_mode: TrainMode
 ) -> Dict[str, Any]:
     model.train()
 
@@ -121,11 +128,14 @@ def train_one_problem(
 
         model_reward = problem_state.get_reward(action=model_action, routes=routes)
         trainer_reward = problem_state.get_reward(action=trainer_action, routes=routes)
-
         courier_choice_loss = criterion(model_couriers_logits, torch.tensor(trainer_courier_idx).to(device))
         location_choice_loss = criterion(model_locations_logits, torch.tensor(trainer_location_idx).to(device))
 
-        delta_reward = (trainer_reward - model_reward)
+        if train_mode == TrainMode.PENALTY_MODE:
+            delta_reward = (trainer_reward - model_reward)
+        else:
+            delta_reward = 10
+
         total_delta_reward += delta_reward
         total_trainer_reward += trainer_reward
         total_loss += (courier_choice_loss + location_choice_loss) * delta_reward
@@ -190,8 +200,9 @@ def train(
         dataset: Union[SimpleDataset, DatasetWithPreparedSolutions],
         problem_description_samples: List[List[Tuple[ProblemDescription, Routes]]],
         device: torch.device,
+        train_mode: TrainMode,
         checkpoint_path: Optional[Union[os.PathLike, str]] = None,
-        lr_scheduler=None
+        lr_scheduler=None,
 ):
     history = defaultdict(lambda: defaultdict(list))
 
@@ -210,7 +221,8 @@ def train(
                 optimizer=optimizer,
                 problem_description=problem_description,
                 routes=routes,
-                device=device
+                device=device,
+                train_mode=train_mode
             )
             for key in ['mean_problem_loss']:
                 history['train'][key].append(train_epoch_info[key])
