@@ -23,7 +23,7 @@ def problem_description_for_tests() -> models.ProblemDescription:
                 'lat': 55.742940,
                 'lon': 37.474298,
             },
-            'time_window_start_s': 0,
+            'time_window_start_s': 32400,
             'time_window_end_s': 86400
         }),
         models.LocationId('location_2'): models.Location.parse_obj({
@@ -33,7 +33,7 @@ def problem_description_for_tests() -> models.ProblemDescription:
                 'lat': 55.746817,
                 'lon': 37.773769,
             },
-            'time_window_start_s': 0,
+            'time_window_start_s': 28800,
             'time_window_end_s': 86400
         })
     }

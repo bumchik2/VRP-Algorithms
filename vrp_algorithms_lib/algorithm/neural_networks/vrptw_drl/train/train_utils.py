@@ -14,6 +14,7 @@ import torch.optim
 from IPython.display import clear_output
 from tqdm import tqdm
 
+from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import ALL_PENALTY_CALCULATORS
 import vrp_algorithms_lib.analytical_tools.viz_problem_description as my_viz
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.greedy_inference import GreedyInference
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
@@ -73,7 +74,8 @@ def train_one_problem(
         criterion,
         optimizer: torch.optim.Optimizer,
         problem_description: ProblemDescription,
-        routes: Optional[Routes]
+        routes: Optional[Routes],
+        device: torch.device
 ) -> Dict[str, Any]:
     model.train()
 
@@ -84,7 +86,7 @@ def train_one_problem(
     model.initialize(problem_state, None)
     trainer.initialize(problem_state, routes)
 
-    total_loss = torch.tensor(0.)
+    total_loss = torch.tensor(0.).to(device)
     incorrect_location_choices = 0
     total_delta_reward = 0
     total_trainer_reward = 0
@@ -117,11 +119,11 @@ def train_one_problem(
         model_action = Action(courier_id=model_courier_id, location_id=model_location_id)
         trainer_action = Action(courier_id=trainer_courier_id, location_id=trainer_location_id)
 
-        model_reward = problem_state.get_reward(action=model_action)
-        trainer_reward = problem_state.get_reward(action=trainer_action)
+        model_reward = problem_state.get_reward(action=model_action, routes=routes)
+        trainer_reward = problem_state.get_reward(action=trainer_action, routes=routes)
 
-        courier_choice_loss = criterion(model_couriers_logits, torch.tensor(trainer_courier_idx))
-        location_choice_loss = criterion(model_locations_logits, torch.tensor(trainer_location_idx))
+        courier_choice_loss = criterion(model_couriers_logits, torch.tensor(trainer_courier_idx).to(device))
+        location_choice_loss = criterion(model_locations_logits, torch.tensor(trainer_location_idx).to(device))
 
         delta_reward = (trainer_reward - model_reward)
         total_delta_reward += delta_reward
@@ -153,7 +155,7 @@ def get_and_plot_inference_examples(
     if isinstance(model, torch.nn.Module):
         model.eval()
 
-    fig = plt.figure(figsize=(20, 6 * len(problem_description_samples)))
+    fig = plt.figure(figsize=(20, 7 * len(problem_description_samples)))
     if suptitle:
         fig.suptitle(suptitle, fontsize=22)
 
@@ -167,8 +169,16 @@ def get_and_plot_inference_examples(
             routes = greedy_inference.solve_problem()
 
             plt.subplot(len(problem_description_samples), 3, 3 * batch_number + i + 1)
-            plt.title(f'Inference example {i + 1}', fontsize=15)
-            my_viz.plot_routes(problem_description, routes, ax=plt.gca(), legend=False)
+            penalties = {
+                penalty.get_penalty_name(): penalty.calculate(problem_description, routes)
+                for penalty in ALL_PENALTY_CALCULATORS
+            }
+
+            losses_str = '\n'.join([f'{penalty_name}: {round(penalties[penalty_name], 2)}' for penalty_name in penalties])
+            title = f'Inference example {i + 1}\n' + losses_str
+            my_viz.plot_routes(problem_description, routes, ax=plt.gca(), title=title, legend=False)
+
+    plt.tight_layout()
 
 
 def train(
@@ -179,6 +189,7 @@ def train(
         num_epochs: int,
         dataset: Union[SimpleDataset, DatasetWithPreparedSolutions],
         problem_description_samples: List[List[Tuple[ProblemDescription, Routes]]],
+        device: torch.device,
         checkpoint_path: Optional[Union[os.PathLike, str]] = None,
         lr_scheduler=None
 ):
@@ -198,7 +209,8 @@ def train(
                 criterion=criterion,
                 optimizer=optimizer,
                 problem_description=problem_description,
-                routes=routes
+                routes=routes,
+                device=device
             )
             for key in ['mean_problem_loss']:
                 history['train'][key].append(train_epoch_info[key])

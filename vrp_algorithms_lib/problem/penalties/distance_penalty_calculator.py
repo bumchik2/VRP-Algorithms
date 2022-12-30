@@ -3,6 +3,11 @@ from vrp_algorithms_lib.problem.penalties.base_penalty_calculator import BasePen
 
 
 class DistancePenaltyCalculator(BasePenaltyCalculator):
+    @staticmethod
+    def get_penalty_name(
+    ) -> str:
+        return 'distance_penalty'
+
     def calculate(
             self,
             problem_description: ProblemDescription,

@@ -13,18 +13,22 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Probl
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Routes
 
 
-class AttentionModel(ModelBase, nn.Module):
+class AttentionModel(nn.Module, ModelBase):
     def __init__(
             self,
             attention_neural_network: AttentionNeuralNetwork,
+            device: torch.device = torch.device('cpu')
     ):
         super().__init__()
 
+        self.device = device
         self.attention_neural_network = attention_neural_network
         self.vehicles_state_information = None
         self.routes_embedding = None
         self.locations_mean_lat = None
         self.locations_mean_lon = None
+
+        self.to(device)
 
     def normalize_lat(self, lat: float):
         return (lat - self.locations_mean_lat) * 6.0
@@ -71,7 +75,7 @@ class AttentionModel(ModelBase, nn.Module):
         ]
         locations_information.append(depot_information)
 
-        return torch.tensor(locations_information, dtype=torch.float32)
+        return torch.tensor(locations_information, dtype=torch.float32).to(self.device)
 
     def get_vehicles_state_information(
             self,
@@ -110,7 +114,7 @@ class AttentionModel(ModelBase, nn.Module):
 
             vehicles_state_information.append(vehicle_information)
 
-        return torch.tensor(vehicles_state_information, dtype=torch.float32)
+        return torch.tensor(vehicles_state_information, dtype=torch.float32).to(self.device)
 
     def get_graph_embedding(
             self,

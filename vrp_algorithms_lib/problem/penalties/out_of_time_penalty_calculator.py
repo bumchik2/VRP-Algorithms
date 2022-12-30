@@ -4,6 +4,11 @@ from vrp_algorithms_lib.problem.visit_time_scheduler import VisitTimeScheduler
 
 
 class OutOfTimePenaltyCalculator(BasePenaltyCalculator):
+    @staticmethod
+    def get_penalty_name(
+    ) -> str:
+        return 'out_of_time_penalty'
+
     def calculate(
             self,
             problem_description: ProblemDescription,

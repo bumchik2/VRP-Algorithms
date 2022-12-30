@@ -9,8 +9,11 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Route
 
 class ModelWithPreparedSolution(ModelBase):
     def __init__(
-            self
+            self,
+            device: torch.device = torch.device('cpu')
     ):
+        super().__init__(device)
+
         self.routes = None
 
     def initialize(

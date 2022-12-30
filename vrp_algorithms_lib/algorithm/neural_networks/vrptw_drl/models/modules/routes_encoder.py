@@ -3,14 +3,15 @@ from typing import List
 import torch
 import torch.nn as nn
 
-from vrp_algorithms_lib.algorithm.neural_networks.common.common_modules import LinearBlockWithNormalization
+from vrp_algorithms_lib.algorithm.neural_networks.common.common_modules import LinearBlockWithNormalizationChain
 
 
 class RoutesEncoder(nn.Module):
     def __init__(
             self,
             graph_embedding_dim: int,
-            routes_embedding_dim: int  # 512 in the original article
+            routes_embedding_dim: int,  # 512 in the original article
+            linear_blocks_number: int
     ):
         """
         Gets embedding of the partial routes
@@ -19,12 +20,16 @@ class RoutesEncoder(nn.Module):
         """
         super().__init__()
 
-        self.linear_block = LinearBlockWithNormalization(graph_embedding_dim, routes_embedding_dim)
+        self.linear_blocks = LinearBlockWithNormalizationChain(
+            input_dim=graph_embedding_dim,
+            output_dim=routes_embedding_dim,
+            linear_blocks_number=linear_blocks_number
+        )
 
     def forward(
             self,
             graph_embedding: torch.Tensor,
-            locations_idx: List[List[int]]
+            locations_idx: List[List[int]],
     ):
         # graph_embedding is of dim number_of_locations x graph_embedding_dim
         # locations_idx[i][j] shows the location idx added for vehicle i at step j
@@ -39,5 +44,5 @@ class RoutesEncoder(nn.Module):
         routes_embedding: torch.Tensor = torch.cat(route_embeddings, dim=0)  # vehicles_number x T x graph_embedding_dim
         routes_embedding = torch.max(routes_embedding, dim=1)[0]  # vehicles_number x graph_embedding_dim
 
-        routes_embedding = self.linear_block(routes_embedding)  # vehicles_number x routes_embedding_dim
+        routes_embedding = self.linear_blocks(routes_embedding)  # vehicles_number x routes_embedding_dim
         return routes_embedding

@@ -14,7 +14,7 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.vehic
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.vehicle_selection_decoder import \
     VehicleSelectionDecoder
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.location_selection_decoder import \
-    LocationSelectionDecoder
+    LocationSelectionDecoder, LocationSelectionDecoderWithCompatibilityLayer
 from typing import List
 
 
@@ -26,12 +26,16 @@ class AttentionNeuralNetwork(nn.Module):
             graph_embedding_dim: int,
             locations_embedding_dim: int,
             dropout: float,
+            use_compatibility_layer: bool,  # True in the original article
             graph_encoder_hidden_dim: int = 128,  # 128 in the original article
             vehicles_state_embedding_dim: int = 512,  # 512 in the original article
             routes_embedding_dim: int = 512,  # 512 in the original article
             num_heads: int = 8,  # 8 in the original article
+            linear_blocks_number: int = 1,  # number of linear blocks in the end of each model.
     ):
         super().__init__()
+
+        self.use_compatibility_layer = use_compatibility_layer
 
         self.graph_encoder = GraphEncoder(
             locations_information_dim=locations_information_dim,
@@ -43,12 +47,14 @@ class AttentionNeuralNetwork(nn.Module):
 
         self.vehicles_state_encoder = VehiclesStateEncoder(
             vehicles_state_information_dim=vehicles_state_information_dim,
-            vehicles_state_embedding_dim=vehicles_state_embedding_dim
+            vehicles_state_embedding_dim=vehicles_state_embedding_dim,
+            linear_blocks_number=linear_blocks_number
         )
 
         self.routes_encoder = RoutesEncoder(
             graph_embedding_dim=graph_embedding_dim,
-            routes_embedding_dim=routes_embedding_dim
+            routes_embedding_dim=routes_embedding_dim,
+            linear_blocks_number=linear_blocks_number
         )
 
         self.vehicle_selection_decoder = VehicleSelectionDecoder(
@@ -56,13 +62,20 @@ class AttentionNeuralNetwork(nn.Module):
             routes_embedding_dim=routes_embedding_dim
         )
 
-        self.location_selection_decoder = LocationSelectionDecoder(
+        if use_compatibility_layer:
+            location_selection_decoder_class = LocationSelectionDecoderWithCompatibilityLayer
+            linear_blocks_number = 1  # >1 not supported
+        else:
+            location_selection_decoder_class = LocationSelectionDecoder
+
+        self.location_selection_decoder = location_selection_decoder_class(
             graph_embedding_dim=graph_embedding_dim,
             vehicles_state_information_dim=vehicles_state_information_dim,
             locations_embedding_dim=locations_embedding_dim,
             routes_embedding_dim=routes_embedding_dim,
             num_heads=num_heads,
             dropout=dropout,
+            linear_blocks_number=linear_blocks_number
         )
 
     def get_graph_embedding(

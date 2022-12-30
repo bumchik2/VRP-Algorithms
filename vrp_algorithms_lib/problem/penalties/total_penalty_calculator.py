@@ -14,6 +14,11 @@ ALL_PENALTY_CALCULATORS: List[BasePenaltyCalculator] = [
 
 
 class TotalPenaltyCalculator(BasePenaltyCalculator):
+    @staticmethod
+    def get_penalty_name(
+    ) -> str:
+        return 'total_penalty'
+
     def calculate(
             self,
             problem_description: ProblemDescription,

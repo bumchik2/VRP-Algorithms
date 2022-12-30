@@ -2,6 +2,7 @@ from typing import Dict
 from typing import List
 from typing import Set
 from typing import Union
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -84,20 +85,74 @@ class ProblemState(BaseModel):
     def get_current_penalty(self):
         return TotalPenaltyCalculator().calculate(self.problem_description, extract_routes_from_problem_state(self))
 
-    def get_reward(self, action: Action):
+    def get_delta_penalty(
+            self,
+            action: Action
+    ) -> float:
         assert action.location_id in self.problem_description.locations
 
         max_penalty = 200
         if action.location_id in self.visited_location_ids:
-            return -max_penalty * 1.5  # Choosing incorrect location is the worst thing possible
+            return max_penalty * 1.5  # Choosing incorrect location is the worst thing possible
 
         current_penalty = self.get_current_penalty()
         self.update(action)
         new_penalty = self.get_current_penalty()
         self._undo_action(action)
         delta_penalty = new_penalty - current_penalty
+        return min(delta_penalty, max_penalty)
 
-        return -min(delta_penalty, max_penalty)
+    def get_number_of_potential_latenesses(
+            self,
+            action: Action,
+            routes: Routes
+    ):
+        # Get number of locations of the courier that have not been yet visited
+        # and have lower time window begin than the chosen location
+        courier_id = action.courier_id
+
+        courier_routes = [route for route in routes.routes if route.vehicle_id == action.courier_id]
+        assert len(courier_routes) == 1
+        courier_route = courier_routes[0]
+
+        partial_route = [vehicle_state for vehicle_state in self.vehicle_states
+                         if vehicle_state.courier_id == courier_id][0].partial_route
+        location_ids_to_visit = set(courier_route.location_ids) - set(partial_route)
+
+        number_of_potential_latenesses = 0
+        chosen_location_time_window_start_s = self.problem_description.locations[action.location_id].time_window_start_s
+
+        for location_id in location_ids_to_visit:
+            location = self.problem_description.locations[location_id]
+            current_time_window_start_s = location.time_window_start_s
+            if current_time_window_start_s < chosen_location_time_window_start_s:
+                number_of_potential_latenesses += 1
+
+        return number_of_potential_latenesses
+
+    def get_lateness_risk_reward(
+            self,
+            action: Action,
+            routes: Optional[Routes]
+    ) -> float:
+        if routes is None:
+            return 0
+
+        number_of_potential_latenesses = self.get_number_of_potential_latenesses(action, routes)
+
+        potential_lateness_multiplier = 3.0
+        max_potential_lateness_penalty = 100.0
+
+        return -min(potential_lateness_multiplier * number_of_potential_latenesses, max_potential_lateness_penalty)
+
+    def get_reward(
+            self,
+            action: Action,
+            routes: Optional[Routes]
+    ) -> float:
+        delta_penalty = self.get_delta_penalty(action)
+        lateness_risk_reward = self.get_lateness_risk_reward(action, routes)
+        return -delta_penalty + lateness_risk_reward
 
     def update(self, action: Action):
         assert action.location_id not in self.visited_location_ids, f'{action.location_id} was visited before'

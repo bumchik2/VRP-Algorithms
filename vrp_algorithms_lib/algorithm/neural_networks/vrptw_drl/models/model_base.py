@@ -9,6 +9,12 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import Route
 
 
 class ModelBase(ABC):
+    def __init__(
+            self,
+            device: torch.device = torch.device('cpu')
+    ):
+        self.device = device
+
     @abstractmethod
     def initialize(
             self,
@@ -28,7 +34,7 @@ class ModelBase(ABC):
             self,
             problem_state: ProblemState
     ):
-        return self._get_couriers_logits(problem_state)
+        return self._get_couriers_logits(problem_state).to(self.device)
 
     @abstractmethod
     def _get_locations_logits(
@@ -43,4 +49,4 @@ class ModelBase(ABC):
             courier_id: CourierId,
             problem_state: ProblemState
     ):
-        return self._get_locations_logits(courier_id, problem_state)
+        return self._get_locations_logits(courier_id, problem_state).to(self.device)
