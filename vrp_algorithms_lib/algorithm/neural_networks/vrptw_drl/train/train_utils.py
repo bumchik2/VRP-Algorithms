@@ -15,7 +15,6 @@ import torch.optim
 from IPython.display import clear_output
 from tqdm import tqdm
 
-from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import ALL_PENALTY_CALCULATORS
 import vrp_algorithms_lib.analytical_tools.viz_problem_description as my_viz
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.greedy_inference import GreedyInference
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
@@ -26,6 +25,7 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.dataset_with_p
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.simple_dataset import SimpleDataset
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Routes
+from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import ALL_PENALTY_CALCULATORS
 
 
 class TrainMode(Enum):
@@ -133,8 +133,10 @@ def train_one_problem(
 
         if train_mode == TrainMode.PENALTY_MODE:
             delta_reward = (trainer_reward - model_reward)
-        else:
+        elif train_mode == TrainMode.RECONSTRUCTION_MODE:
             delta_reward = 10
+        else:
+            raise ValueError(f'Unknown TrainMode: {train_mode}')
 
         total_delta_reward += delta_reward
         total_trainer_reward += trainer_reward
@@ -184,7 +186,8 @@ def get_and_plot_inference_examples(
                 for penalty in ALL_PENALTY_CALCULATORS
             }
 
-            losses_str = '\n'.join([f'{penalty_name}: {round(penalties[penalty_name], 2)}' for penalty_name in penalties])
+            losses_str = '\n'.join(
+                [f'{penalty_name}: {round(penalties[penalty_name], 2)}' for penalty_name in penalties])
             title = f'Inference example {i + 1}\n' + losses_str
             my_viz.plot_routes(problem_description, routes, ax=plt.gca(), title=title, legend=False)
 

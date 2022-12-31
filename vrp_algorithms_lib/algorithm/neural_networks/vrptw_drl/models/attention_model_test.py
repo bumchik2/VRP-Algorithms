@@ -17,7 +17,7 @@ def attention_model_without_neural_network() -> AttentionModel:
 def test_get_locations_information(problem_state_for_tests, attention_model_without_neural_network):
     problem_state_for_tests: ProblemState
     attention_model_without_neural_network: AttentionModel
-    attention_model_without_neural_network.initialize(problem_state_for_tests)
+    attention_model_without_neural_network.initialize(problem_state_for_tests, routes=None)
 
     locations_information = attention_model_without_neural_network.get_locations_information(
         problem_state=problem_state_for_tests
@@ -29,8 +29,8 @@ def test_get_locations_information(problem_state_for_tests, attention_model_with
     assert locations_information[-1][4].item() == 0, 'demand for the depot has to be 0'
 
     depot = list(problem_state_for_tests.problem_description.depots.values())[0]
-    depot_lat = depot.lat
-    depot_lon = depot.lon
+    depot_lat = depot.point.lat
+    depot_lon = depot.point.lon
     assert np.isclose(locations_information[-1][0].item(),
                       attention_model_without_neural_network.normalize_lat(depot_lat))
     assert np.isclose(locations_information[-1][1].item(),
@@ -38,8 +38,8 @@ def test_get_locations_information(problem_state_for_tests, attention_model_with
 
     location_id = problem_state_for_tests.idx_to_location_id[0]
     location = problem_state_for_tests.problem_description.locations[location_id]
-    location_lat = location.lat
-    location_lon = location.lon
+    location_lat = location.point.lat
+    location_lon = location.point.lon
     assert np.isclose(locations_information[0][0].item(),
                       attention_model_without_neural_network.normalize_lat(location_lat))
     assert np.isclose(locations_information[0][1].item(),
@@ -49,15 +49,15 @@ def test_get_locations_information(problem_state_for_tests, attention_model_with
 def test_get_vehicles_state_information(problem_state_for_tests, attention_model_without_neural_network):
     problem_state_for_tests: ProblemState
     attention_model_without_neural_network: AttentionModel
-    attention_model_without_neural_network.initialize(problem_state_for_tests)
+    attention_model_without_neural_network.initialize(problem_state_for_tests, routes=None)
 
     vehicles_state_information = attention_model_without_neural_network.get_vehicles_state_information(
         problem_state=problem_state_for_tests
     )
 
     depot = list(problem_state_for_tests.problem_description.depots.values())[0]
-    depot_lat = depot.lat
-    depot_lon = depot.lon
+    depot_lat = depot.point.lat
+    depot_lon = depot.point.lon
     assert len(vehicles_state_information) == len(problem_state_for_tests.problem_description.couriers)
     assert np.isclose(vehicles_state_information[0][0].item(),
                       attention_model_without_neural_network.normalize_lat(depot_lat))
@@ -73,8 +73,8 @@ def test_get_vehicles_state_information(problem_state_for_tests, attention_model
         problem_state=problem_state_for_tests
     )
     location_1 = problem_state_for_tests.problem_description.locations[LocationId('location_1')]
-    location_1_lat = location_1.lat
-    location_1_lon = location_1.lon
+    location_1_lat = location_1.point.lat
+    location_1_lon = location_1.point.lon
     assert np.isclose(vehicles_state_information[0][0].item(),
                       attention_model_without_neural_network.normalize_lat(location_1_lat))
     assert np.isclose(vehicles_state_information[0][1].item(),

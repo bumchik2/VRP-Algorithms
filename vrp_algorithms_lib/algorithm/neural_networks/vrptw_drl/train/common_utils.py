@@ -22,11 +22,18 @@ def common_min_max_value_check(
 
 def get_routes_slice(
         routes: Routes,
-        courier_ids: List[CourierId]
+        courier_ids: List[CourierId],
+        location_ids: Optional[List[LocationId]] = None
 ) -> Routes:
-    return Routes(
+    routes_filtered = Routes(
         routes=[route for route in routes.routes if route.vehicle_id in courier_ids]
     )
+
+    if location_ids:
+        for route in routes_filtered.routes:
+            route.location_ids = [location_id for location_id in route.location_ids if location_id in location_ids]
+
+    return routes_filtered
 
 
 def get_distance_matrix_slice(
