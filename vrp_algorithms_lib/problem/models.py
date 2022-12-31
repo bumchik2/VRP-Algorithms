@@ -57,6 +57,12 @@ class ProblemDescription(BaseModel):
     time_matrix: TimeMatrix
     penalties: Penalties
 
+    def get_depot(
+            self
+    ) -> Depot:
+        assert len(self.depots) == 1
+        return self.depots[list(self.depots.keys())[0]]
+
 
 class Route(BaseModel):
     vehicle_id: CourierId
@@ -65,6 +71,14 @@ class Route(BaseModel):
 
 class Routes(BaseModel):
     routes: List[Route]
+
+    def get_route_by_vehicle_id(
+            self,
+            vehicle_id: CourierId
+    ) -> Route:
+        route_wrapped = [route for route in self.routes if route.vehicle_id == vehicle_id]
+        assert len(route_wrapped) == 1
+        return route_wrapped[0]
 
 
 def get_euclidean_distance_matrix(

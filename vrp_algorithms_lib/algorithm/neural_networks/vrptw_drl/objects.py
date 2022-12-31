@@ -173,6 +173,15 @@ class ProblemState(BaseModel):
                 vehicle_state.partial_route.append(last_location_id_in_the_route)
                 self.locations_idx[current_courier_idx].append(len(self.problem_description.locations))
 
+    def get_vehicle_state_by_courier_id(
+            self,
+            courier_id: CourierId
+    ) -> VehicleState:
+        vehicle_state_wrapped = [vehicle_state for vehicle_state in self.vehicle_states
+                                 if vehicle_state.courier_id == courier_id]
+        assert len(vehicle_state_wrapped) == 1
+        return vehicle_state_wrapped[0]
+
 
 def initialize_problem_state(problem_description: ProblemDescription) -> ProblemState:
     locations_idx = [[len(problem_description.locations)] for _ in range(len(problem_description.couriers))]

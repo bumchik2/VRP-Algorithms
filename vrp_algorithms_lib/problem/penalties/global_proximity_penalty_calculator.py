@@ -4,8 +4,7 @@ from vrp_algorithms_lib.problem.penalties.base_penalty_calculator import BasePen
 
 class GlobalProximityPenaltyCalculator(BasePenaltyCalculator):
     @staticmethod
-    def get_penalty_name(
-    ) -> str:
+    def get_penalty_name() -> str:
         return 'global_proximity_penalty'
 
     def calculate(
@@ -32,6 +31,6 @@ class GlobalProximityPenaltyCalculator(BasePenaltyCalculator):
                 total_distance += distance_to_last_location
 
             penalty += penalty_multipliers.distance_penalty_multiplier * total_distance * \
-                penalty_multipliers.global_proximity_factor
+                       penalty_multipliers.global_proximity_factor
 
         return penalty
