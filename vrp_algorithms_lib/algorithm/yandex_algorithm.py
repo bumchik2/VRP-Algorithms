@@ -7,7 +7,7 @@ class YandexAlgorithm(BaseAlgorithm):
             self,
             problem_description: ProblemDescription
     ) -> Routes:
-        # Not sure if I want to implement this.
+        # Not sure if it really needs to be implemented.
         # It would require usage of some internal yandex libraries and
         # "problem description to yandex request" converter
         raise NotImplementedError
