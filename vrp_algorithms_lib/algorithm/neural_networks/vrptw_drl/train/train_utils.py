@@ -84,8 +84,6 @@ def train_one_problem(
         device: torch.device,
         train_mode: TrainMode
 ) -> Dict[str, Any]:
-    print('in', end=' ')
-
     model.train()
 
     optimizer.zero_grad()
@@ -152,8 +150,6 @@ def train_one_problem(
 
     average_problem_loss = total_loss.item()
     delta_reward_percentage = 100.0 * total_delta_reward / np.abs(total_trainer_reward)
-
-    print('out', end=' ')
 
     return {
         'incorrect_location_choices_share': incorrect_location_choices / len(problem_description.locations),
