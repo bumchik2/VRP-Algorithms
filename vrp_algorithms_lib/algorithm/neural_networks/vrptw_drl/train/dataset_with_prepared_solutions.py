@@ -8,6 +8,7 @@ import scipy.stats as sps
 import torch.utils.data as data_utils
 
 import vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.common_utils as common_utils
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.transform.transform import Transform
 from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
 
 
@@ -19,7 +20,8 @@ class DatasetWithPreparedSolutions(data_utils.Dataset):
             num_vehicles: Optional[int] = None,
             min_vehicles: Optional[int] = None,
             max_vehicles: Optional[int] = None,
-            dataset_size: int = 100
+            dataset_size: int = 100,
+            transform: Optional[Transform] = None
     ):
         super().__init__()
 
@@ -33,6 +35,8 @@ class DatasetWithPreparedSolutions(data_utils.Dataset):
         self.max_vehicles = max_vehicles
 
         self.dataset_size = dataset_size
+
+        self.transform = transform
 
     def __len__(self):
         return self.dataset_size
@@ -48,32 +52,19 @@ class DatasetWithPreparedSolutions(data_utils.Dataset):
         chosen_routes = self.routes_list[random_problem_description_idx]
 
         # Only choose vehicles with non-empty routes
-        chose_not_empty_routes = False
-        chosen_vehicle_ids = None
+        non_empty_couriers_ids = []
+        for route in chosen_routes.routes:
+            if len(route.location_ids) > 0:
+                non_empty_couriers_ids.append(route.vehicle_id)
 
-        while not chose_not_empty_routes:
-            chosen_vehicle_indexes = random.sample(range(len(chosen_problem_description.couriers)), num_vehicles)
-            chosen_vehicle_ids = [courier_id for i, courier_id in enumerate(chosen_problem_description.couriers)
-                                  if i in chosen_vehicle_indexes]
-
-            chose_not_empty_routes = True
-            potential_routes = common_utils.get_routes_slice(chosen_routes, chosen_vehicle_ids)
-
-            if len(potential_routes.routes) != num_vehicles:
-                chose_not_empty_routes = False
-                continue
-
-            for route in potential_routes.routes:
-                if len(route.location_ids) == 0:
-                    chose_not_empty_routes = False
-                    break
-
+        chosen_vehicle_ids = random.sample(non_empty_couriers_ids, k=num_vehicles)
         assert len(chosen_vehicle_ids) == num_vehicles
         assert len(chosen_vehicle_ids) == len(set(chosen_vehicle_ids))
         routes = common_utils.get_routes_slice(chosen_routes, chosen_vehicle_ids)
 
         chosen_location_ids = []
         for route in routes.routes:
+            assert len(route.location_ids) > 0
             for location_id in route.location_ids:
                 chosen_location_ids.append(location_id)
 
@@ -86,4 +77,8 @@ class DatasetWithPreparedSolutions(data_utils.Dataset):
         num_vehicles = self.num_vehicles if self.num_vehicles is not None else sps.randint(
             self.min_vehicles, self.max_vehicles + 1).rvs()
         random_problem_description, routes = self._get_random_problem_description_and_routes(num_vehicles)
+
+        if self.transform is not None:
+            random_problem_description, routes = self.transform(random_problem_description, routes)
+
         return random_problem_description, routes

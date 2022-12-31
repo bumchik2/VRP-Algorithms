@@ -7,6 +7,7 @@ def choose_next_courier_id(
 ) -> CourierId:
     min_distance = 10 ** 9
     next_courier_id = None
+
     for potential_next_courier_idx in range(len(problem_state.problem_description.couriers)):
         potential_next_courier_id = problem_state.idx_to_courier_id[potential_next_courier_idx]
         current_courier_vehicle_state = problem_state.get_vehicle_state_by_courier_id(potential_next_courier_id)
