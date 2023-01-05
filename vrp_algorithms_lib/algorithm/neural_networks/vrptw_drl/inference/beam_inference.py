@@ -28,7 +28,7 @@ class BeamInference(BaseInference):
         )
 
         self._problem_states: List[ProblemState] = [self.problem_state]
-        self._cum_logits = []
+        self._cum_logits = [0]
 
         self.beam = beam
         self.use_courier_logits = use_courier_logits
@@ -45,15 +45,15 @@ class BeamInference(BaseInference):
                 courier_logits = self.model.get_couriers_logits(problem_state)
 
                 for courier_idx, courier_logit in enumerate(courier_logits):
-                    courier_id = self.problem_state.idx_to_courier_id[courier_idx]
-                    locations_logits = self.model.get_locations_logits(courier_id, self.problem_state)
-                    for visited_location_id in self.problem_state.visited_location_ids:
-                        visited_location_idx = self.problem_state.location_id_to_idx[visited_location_id]
+                    courier_id = problem_state.idx_to_courier_id[courier_idx]
+                    locations_logits = self.model.get_locations_logits(courier_id, problem_state)
+                    for visited_location_id in problem_state.visited_location_ids:
+                        visited_location_idx = problem_state.location_id_to_idx[visited_location_id]
                         locations_logits[visited_location_idx] -= torch.tensor(1e6, dtype=torch.float32)
 
                     best_locations_logits, best_locations_indices = torch.topk(locations_logits, k=self.beam)
 
-                    for location_idx in best_locations_indices:
+                    for location_idx in best_locations_indices.numpy():
                         location_id = problem_state.idx_to_location_id[location_idx]
                         if location_id in problem_state.visited_location_ids:
                             continue
@@ -72,8 +72,7 @@ class BeamInference(BaseInference):
             best_potential_updates = sorted(potential_updates, key=lambda x: x['potential_cum_logit'])[-self.beam:]
             for best_potential_update in best_potential_updates:
                 new_problem_states.append(deepcopy(
-                    best_potential_update[self._problem_states[best_potential_update[
-                        'potential_previous_problem_state_idx']]]
+                    self._problem_states[best_potential_update['potential_previous_problem_state_idx']]
                 ))
                 new_problem_states[-1].update(best_potential_update['potential_action'])
                 new_cum_logits.append(best_potential_update['potential_cum_logit'])

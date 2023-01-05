@@ -1,6 +1,10 @@
+from typing import List
+from typing import Optional
+
 import matplotlib.pyplot as plt
 
-from vrp_algorithms_lib.problem.models import ProblemDescription, Route, Routes
+from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
+from vrp_algorithms_lib.problem.models import Route
 
 
 def plot_route(problem_description: ProblemDescription, route: Route, ax=None, legend: bool = True):
@@ -72,3 +76,34 @@ def plot_routes(problem_description: ProblemDescription, routes: Routes, title='
 
     if need_to_show:
         plt.show()
+
+
+def plot_algorithms_inference_examples(
+        algorithms_names: List[str],
+        problem_description_list: List[ProblemDescription],
+        routes_lists: List[List[Routes]],
+        first_k: Optional[int] = None
+) -> None:
+    assert len(problem_description_list) == len(routes_lists[0])
+    assert len(problem_description_list) <= 10 or first_k is not None
+
+    figsize = (20, 5 * min(len(problem_description_list), first_k))
+    fig, axes = plt.subplots(min(len(problem_description_list), first_k), len(algorithms_names), figsize=figsize)
+
+    for i, algorithm_name in enumerate(algorithms_names):
+        for j, (problem_description, routes) in enumerate(zip(problem_description_list, routes_lists[i])):
+            if j == first_k:
+                break
+
+            title = algorithm_name if j == 0 else ''
+
+            plot_routes(
+                problem_description=problem_description,
+                routes=routes,
+                ax=axes[j][i],
+                legend=False,
+                title=title
+            )
+
+    fig.tight_layout()
+    plt.show()

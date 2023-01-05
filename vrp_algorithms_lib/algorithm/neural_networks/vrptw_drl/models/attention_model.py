@@ -17,7 +17,8 @@ class AttentionModel(nn.Module, ModelBase):
     def __init__(
             self,
             attention_neural_network: AttentionNeuralNetwork,
-            device: torch.device = torch.device('cpu')
+            device: torch.device = torch.device('cpu'),
+            secure_mode: bool = True
     ):
         super().__init__()
 
@@ -27,6 +28,8 @@ class AttentionModel(nn.Module, ModelBase):
         self.routes_embedding = None
         self.locations_mean_lat = None
         self.locations_mean_lon = None
+
+        self.secure_mode = secure_mode
 
         self.to(device)
 
@@ -180,7 +183,8 @@ class AttentionModel(nn.Module, ModelBase):
             last_node_for_the_chosen_vehicle_idx=locations_idx[courier_idx][-1]
         )
 
-        self.vehicles_state_information = None
-        self.routes_embedding = None
+        if self.secure_mode:
+            self.vehicles_state_information = None
+            self.routes_embedding = None
 
         return result

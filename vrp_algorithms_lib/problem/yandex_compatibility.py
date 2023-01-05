@@ -5,7 +5,8 @@ from typing import Optional
 
 import vrp_algorithms_lib.common_tools.date_helpers as date_helpers
 import vrp_algorithms_lib.common_tools.file_utils as file_utils
-from vrp_algorithms_lib.problem.models import ProblemDescription, Routes, Route, CourierId
+from vrp_algorithms_lib.problem.models import Penalties, Depot, Courier, CourierId, get_euclidean_distance_matrix, \
+    get_geodesic_time_matrix, ProblemDescription, Routes, Route, Point, Location
 
 
 def solver_request_to_problem_description(
@@ -164,3 +165,108 @@ def transform_request(
     }
 
     return new_request
+
+
+def get_problem_description_by_list_of_monitoring_routes(
+        monitoring_routes: List[dict],
+        distance_penalty_multiplier=0,
+        global_proximity_factor=0,
+        out_of_time_penalty_per_minute=0,
+        verbose: bool = True
+) -> ProblemDescription:
+    for route in monitoring_routes:
+        assert route['date'] == monitoring_routes[0]['date']
+
+    locations = {}
+    couriers = {}
+    depots = {}
+    for route in monitoring_routes:
+        courier_id = route['courier_id']
+
+        if courier_id in couriers:
+            if verbose:
+                print(f'Warning: courier id {courier_id} met twice in '
+                      f'`get_problem_description_by_list_of_monitoring_routes`')
+            continue
+
+        couriers[courier_id] = Courier(id=courier_id)
+
+        depot_id = route['depot']['id']
+        depots[depot_id] = Depot(
+            id=depot_id,
+            point=Point(
+                lat=route['depot']['lat'],
+                lon=route['depot']['lon']
+            )
+        )
+
+        for location in route['orders']:
+            location_id = location['id']
+
+            assert location_id not in locations
+
+            time_window_dict = date_helpers.time_window_str2dict(location['time_interval'])
+            locations[location_id] = Location(
+                id=location_id,
+                depot_id=depot_id,
+                point=Point(
+                    lat=location['lat'],
+                    lon=location['lon']
+                ),
+                time_window_start_s=time_window_dict['begin'],
+                time_window_end_s=time_window_dict['end']
+            )
+
+    assert len(depots) == 1
+
+    distance_matrix = get_euclidean_distance_matrix(depots=depots, locations=locations)
+    time_matrix = get_geodesic_time_matrix(depots=depots, locations=locations, distance_matrix=distance_matrix)
+
+    penalties = Penalties(
+        distance_penalty_multiplier=distance_penalty_multiplier,
+        global_proximity_factor=global_proximity_factor,
+        out_of_time_penalty_per_minute=out_of_time_penalty_per_minute
+    )
+
+    problem_description: ProblemDescription = ProblemDescription(
+        locations=locations,
+        couriers=couriers,
+        depots=depots,
+        distance_matrix=distance_matrix,
+        time_matrix=time_matrix,
+        penalties=penalties
+    )
+
+    return problem_description
+
+
+def get_routes_by_list_of_monitoring_routes(
+        monitoring_routes: List[dict],
+        verbose: bool = True
+) -> Routes:
+    for route in monitoring_routes:
+        assert route['date'] == monitoring_routes[0]['date']
+    result: Routes = Routes(routes=[])
+
+    used_vehicle_ids = set()
+
+    for route in monitoring_routes:
+        vehicle_id = route['courier_id']
+
+        if vehicle_id in used_vehicle_ids:
+            if verbose:
+                print(f'Warning: vehicle id {vehicle_id} met twice in `get_routes_by_list_of_monitoring_routes`')
+            continue
+
+        used_vehicle_ids.add(vehicle_id)
+
+        location_ids = [order['id'] for order in route['orders']]
+
+        result.routes.append(
+            Route(
+                vehicle_id=vehicle_id,
+                location_ids=location_ids
+            )
+        )
+
+    return result

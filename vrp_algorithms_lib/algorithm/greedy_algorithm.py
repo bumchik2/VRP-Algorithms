@@ -11,7 +11,10 @@ from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import TotalP
 
 
 class GreedyAlgorithm(BaseAlgorithm):
-    def __init__(self, clusterizer_name: ClusterizerName.T):
+    def __init__(
+            self,
+            clusterizer_name: ClusterizerName.T
+    ):
         self.clusterizer = CLUSTERIZER_NAME_TO_CLUSTERIZER_TYPE[clusterizer_name]()
 
     def solve_problem(self, problem_description: ProblemDescription) -> Routes:
@@ -20,15 +23,16 @@ class GreedyAlgorithm(BaseAlgorithm):
 
         assert len(problem_description.depots) == 1, 'Multiple depots not supported'
 
-        routes = Routes(routes=[])
-
         location_points: List[List[float]] = [[location.point.lon, location.point.lat] for location in
                                               problem_description.locations.values()]
 
-        for number_of_clusters in range(len(problem_description.couriers)):
+        for number_of_clusters in range(1, len(problem_description.couriers) + 1):
+            routes = Routes(routes=[])
+
             clusters = self.clusterizer.clusterize(location_points, number_of_clusters=number_of_clusters)
 
-            for cluster_number, courier in enumerate(problem_description.couriers.values()):
+            for cluster_number in range(number_of_clusters):
+                courier_id = list(problem_description.couriers)[cluster_number]
                 location_ids_to_visit = set(
                     [location.id for current_cluster_number, location in
                      zip(clusters, problem_description.locations.values())
@@ -36,7 +40,7 @@ class GreedyAlgorithm(BaseAlgorithm):
                 )
 
                 route = Route(
-                    vehicle_id=courier.id,
+                    vehicle_id=courier_id,
                     location_ids=[]
                 )
 
@@ -66,11 +70,13 @@ class GreedyAlgorithm(BaseAlgorithm):
 
                 routes.routes.append(route)
 
-                total_penalty = TotalPenaltyCalculator().calculate(
-                    problem_description=problem_description, routes=routes)
+            assert(len(routes.routes) == number_of_clusters)
 
-                if total_penalty < min_penalty:
-                    min_penalty = total_penalty
-                    best_routes = deepcopy(routes)
+            total_penalty = TotalPenaltyCalculator().calculate(
+                problem_description=problem_description, routes=routes)
+
+            if total_penalty < min_penalty:
+                min_penalty = total_penalty
+                best_routes = deepcopy(routes)
 
         return best_routes

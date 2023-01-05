@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Optional, Dict, Any
 
 import torch
 
@@ -12,10 +12,12 @@ class VrptwDrlAlgorithm(BaseAlgorithm):
     def __init__(
             self,
             model: ModelBase,
-            inference_class: Type[BaseInference]
+            inference_class,
+            inference_params: Optional[Dict[str, Any]] = None
     ):
         self.model = model
         self.inference_class = inference_class
+        self.inference_params = inference_params
 
     @torch.no_grad()
     def solve_problem(self, problem_description: ProblemDescription) -> Routes:
@@ -25,7 +27,8 @@ class VrptwDrlAlgorithm(BaseAlgorithm):
         inference = self.inference_class(
             model=self.model,
             problem_description=problem_description,
-            routes=None
+            routes=None,
+            **self.inference_params
         )
 
         routes = inference.solve_problem()

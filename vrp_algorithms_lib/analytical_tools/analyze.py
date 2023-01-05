@@ -8,7 +8,8 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_metric_
     ModelMetricCalculator
 from vrp_algorithms_lib.problem.metrics.all_metric_calculators import ALL_METRIC_CALCULATORS
 from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
-from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import ALL_PENALTY_CALCULATORS
+from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import TotalPenaltyCalculator, \
+    ALL_PENALTY_CALCULATORS
 
 
 def get_solution_metrics(
@@ -22,7 +23,7 @@ def get_solution_metrics(
 
     metrics_dict = {}
 
-    for penalty_calculator in ALL_PENALTY_CALCULATORS:
+    for penalty_calculator in ALL_PENALTY_CALCULATORS + [TotalPenaltyCalculator()]:
         metrics_dict[penalty_calculator.get_penalty_name()] = penalty_calculator.calculate(
             problem_description=problem_description, routes=routes)
 
@@ -73,8 +74,10 @@ def get_algorithm_metrics(
     algorithm_metrics_dict = {}
 
     for metric_name in solutions_metrics[0].keys():
-        mean_metric_value = np.mean([metrics_dict[metric_name] for metrics_dict in solutions_metrics])
-        algorithm_metrics_dict[f'mean_{mean_metric_value}'] = mean_metric_value
+        for aggregation_function, aggregation_function_name in zip([np.mean, np.median], ['mean', 'median']):
+            aggregated_metric_value = aggregation_function([metrics_dict[metric_name]
+                                                            for metrics_dict in solutions_metrics])
+            algorithm_metrics_dict[f'{aggregation_function_name}_{metric_name}'] = aggregated_metric_value
 
     return algorithm_metrics_dict
 
