@@ -17,6 +17,7 @@ class AttentionModel(nn.Module, ModelBase):
     def __init__(
             self,
             attention_neural_network: AttentionNeuralNetwork,
+            use_max_time_window_start_s: bool,
             device: torch.device = torch.device('cpu'),
             secure_mode: bool = True
     ):
@@ -29,6 +30,7 @@ class AttentionModel(nn.Module, ModelBase):
         self.locations_mean_lat = None
         self.locations_mean_lon = None
 
+        self.use_max_time_window_start_s = use_max_time_window_start_s
         self.secure_mode = secure_mode
 
         self.to(device)
@@ -114,6 +116,15 @@ class AttentionModel(nn.Module, ModelBase):
                 normalized_total_travel_distance,
                 normalized_number_of_orders
             ]
+
+            if self.use_max_time_window_start_s:
+                normalized_max_time_window_start_s = 0.
+                for location_id in vehicle_state.get_filtered_partial_route():
+                    location = problem_state.problem_description.locations[location_id]
+                    normalized_max_time_window_start_s = max(normalized_max_time_window_start_s,
+                                                             location.time_window_start_s)
+                normalized_max_time_window_start_s /= 86400.0
+                vehicle_information.append(normalized_max_time_window_start_s)
 
             vehicles_state_information.append(vehicle_information)
 

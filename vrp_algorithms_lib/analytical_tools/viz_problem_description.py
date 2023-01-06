@@ -87,7 +87,7 @@ def plot_algorithms_inference_examples(
     assert len(problem_description_list) == len(routes_lists[0])
     assert len(problem_description_list) <= 10 or first_k is not None
 
-    figsize = (20, 5 * min(len(problem_description_list), first_k))
+    figsize = (30, 5 * min(len(problem_description_list), first_k))
     fig, axes = plt.subplots(min(len(problem_description_list), first_k), len(algorithms_names), figsize=figsize)
 
     for i, algorithm_name in enumerate(algorithms_names):
