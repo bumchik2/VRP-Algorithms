@@ -3,6 +3,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_metric_calculator import ModelBase, \
     ModelMetricCalculator
@@ -52,11 +53,18 @@ def get_solutions_metrics(
         problem_description_list: List[ProblemDescription],
         routes_list: List[Routes],
         models: Optional[List[ModelBase]],
-        model_names: Optional[List[str]]
+        model_names: Optional[List[str]],
+        use_tqdm: bool = False
 ) -> List[Dict[str, Union[float, int]]]:
+    assert len(problem_description_list) == len(routes_list)
+
     metrics_dicts = []
 
-    for problem_description, routes in zip(problem_description_list, routes_list):
+    range_list = zip(problem_description_list, routes_list)
+    if use_tqdm:
+        range_list = tqdm(range_list, total=len(problem_description_list))
+
+    for problem_description, routes in range_list:
         metrics_dict = get_solution_metrics(problem_description, routes, models, model_names)
         metrics_dicts.append(metrics_dict)
 

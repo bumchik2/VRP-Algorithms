@@ -1,6 +1,10 @@
 from typing import Dict
 from typing import List
 from typing import NewType
+from typing import Set
+from typing import Tuple
+from typing import Union
+
 
 from pydantic import BaseModel
 
@@ -68,6 +72,26 @@ class Route(BaseModel):
     vehicle_id: CourierId
     location_ids: List[LocationId]
 
+    def get_edges_set(
+            self,
+            depot_id: DepotId
+    ) -> Set[Tuple[Union[LocationId, DepotId], LocationId]]:
+        assert depot_id not in self.location_ids
+
+        edges_set = set()
+
+        if len(self.location_ids) == 0:
+            return edges_set
+
+        edges_set.add((depot_id, self.location_ids[0]))
+
+        for i in range(1, len(self.location_ids)):
+            location_id_1 = self.location_ids[i]
+            location_id_2 = self.location_ids[i + 1]
+            edges_set.add((location_id_1, location_id_2))
+
+        return edges_set
+
 
 class Routes(BaseModel):
     routes: List[Route]
@@ -79,6 +103,16 @@ class Routes(BaseModel):
         route_wrapped = [route for route in self.routes if route.vehicle_id == vehicle_id]
         assert len(route_wrapped) == 1
         return route_wrapped[0]
+
+    def get_edges_set(
+            self,
+            depot_id: DepotId
+    ) -> Set[Tuple[Union[LocationId, DepotId], LocationId]]:
+        edges_set = set()
+        for route in self.routes:
+            edges_set.update(route.get_edges_set(depot_id))
+        assert len(edges_set) == sum([len(route.location_ids) for route in self.routes])
+        return edges_set
 
 
 def get_euclidean_distance_matrix(
