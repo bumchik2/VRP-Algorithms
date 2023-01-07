@@ -1,9 +1,8 @@
-from typing import Type, Optional, Dict, Any
+from typing import Optional, Dict, Any
 
 import torch
 
 from vrp_algorithms_lib.algorithm.base_algorithm import BaseAlgorithm
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.inference.base_inference import BaseInference
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base import ModelBase
 from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
 
@@ -17,7 +16,7 @@ class VrptwDrlAlgorithm(BaseAlgorithm):
     ):
         self.model = model
         self.inference_class = inference_class
-        self.inference_params = inference_params
+        self.inference_params = inference_params or {}
 
     @torch.no_grad()
     def solve_problem(self, problem_description: ProblemDescription) -> Routes:

@@ -107,7 +107,7 @@ class AttentionModel(nn.Module, ModelBase):
             normalized_last_point_lon = self.normalize_lon(last_point_lon)
             # divide distance in kilometers by 100
             normalized_total_travel_distance = vehicle_state.total_distance / 100.0
-            # divide number of orders delivered by
+            # divide number of orders delivered by some heuristic constant
             normalized_number_of_orders = (len(set(vehicle_state.partial_route)) - 1) / 50.0
 
             vehicle_information = [
