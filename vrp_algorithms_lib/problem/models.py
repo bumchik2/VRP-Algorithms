@@ -85,7 +85,7 @@ class Route(BaseModel):
 
         edges_set.add((depot_id, self.location_ids[0]))
 
-        for i in range(1, len(self.location_ids)):
+        for i in range(0, len(self.location_ids) - 1):
             location_id_1 = self.location_ids[i]
             location_id_2 = self.location_ids[i + 1]
             edges_set.add((location_id_1, location_id_2))
