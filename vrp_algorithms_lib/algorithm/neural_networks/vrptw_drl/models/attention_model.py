@@ -19,12 +19,15 @@ class AttentionModel(nn.Module, ModelBase):
             attention_neural_network: AttentionNeuralNetwork,
             use_max_time_window_start_s: bool,
             device: torch.device = torch.device('cpu'),
-            secure_mode: bool = True
+            secure_mode: bool = True,
+            use_old_version=False
     ):
         super().__init__()
 
         self.device = device
         self.attention_neural_network = attention_neural_network
+
+        self.vehicles_state_embedding = None
         self.vehicles_state_information = None
         self.routes_embedding = None
         self.locations_mean_lat = None
@@ -32,6 +35,7 @@ class AttentionModel(nn.Module, ModelBase):
 
         self.use_max_time_window_start_s = use_max_time_window_start_s
         self.secure_mode = secure_mode
+        self.use_old_version = use_old_version
 
         self.to(device)
 
@@ -159,7 +163,7 @@ class AttentionModel(nn.Module, ModelBase):
     def _get_couriers_logits(self, problem_state: ProblemState) -> torch.tensor:
         self.vehicles_state_information = self.get_vehicles_state_information(problem_state=problem_state)
 
-        vehicles_state_embedding = self.attention_neural_network.get_vehicles_state_embedding(
+        self.vehicles_state_embedding = self.attention_neural_network.get_vehicles_state_embedding(
             vehicles_state_information=self.vehicles_state_information
         )
 
@@ -173,7 +177,7 @@ class AttentionModel(nn.Module, ModelBase):
         )
 
         result = self.attention_neural_network.get_vehicles_logits(
-            vehicles_state_embedding=vehicles_state_embedding,
+            vehicles_state_embedding=self.vehicles_state_embedding,
             routes_embedding=self.routes_embedding
         )
 
@@ -186,9 +190,12 @@ class AttentionModel(nn.Module, ModelBase):
 
         graph_embedding = self.get_graph_embedding(problem_state=problem_state)
 
+        vehicles_state_information_in_get_locations_logits = self.vehicles_state_information if self.use_old_version \
+            else self.vehicles_state_embedding
+
         result = self.attention_neural_network.get_locations_logits(
             graph_embedding=graph_embedding,
-            vehicles_state_information=self.vehicles_state_information,
+            vehicles_state_information=vehicles_state_information_in_get_locations_logits,
             routes_embedding=self.routes_embedding,
             chosen_vehicle_idx=courier_idx,
             last_node_for_the_chosen_vehicle_idx=locations_idx[courier_idx][-1]
@@ -197,5 +204,6 @@ class AttentionModel(nn.Module, ModelBase):
         if self.secure_mode:
             self.vehicles_state_information = None
             self.routes_embedding = None
+            self.vehicles_state_embedding = None
 
         return result

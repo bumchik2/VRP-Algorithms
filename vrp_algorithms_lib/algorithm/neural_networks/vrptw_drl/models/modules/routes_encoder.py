@@ -3,7 +3,8 @@ from typing import List
 import torch
 import torch.nn as nn
 
-from vrp_algorithms_lib.algorithm.neural_networks.common.common_modules import LinearBlockWithNormalizationChain
+from vrp_algorithms_lib.algorithm.neural_networks.common.common_modules import LinearBlockWithNormalizationChain, \
+    LinearBlockChain
 
 
 class RoutesEncoder(nn.Module):
@@ -11,7 +12,8 @@ class RoutesEncoder(nn.Module):
             self,
             graph_embedding_dim: int,
             routes_embedding_dim: int,  # 512 in the original article
-            linear_blocks_number: int
+            linear_blocks_number: int,
+            use_old_version=False
     ):
         """
         Gets embedding of the partial routes
@@ -20,7 +22,9 @@ class RoutesEncoder(nn.Module):
         """
         super().__init__()
 
-        self.linear_blocks = LinearBlockWithNormalizationChain(
+        linear_block_chain_class = LinearBlockWithNormalizationChain if use_old_version else LinearBlockChain
+
+        self.linear_blocks = linear_block_chain_class(
             input_dim=graph_embedding_dim,
             output_dim=routes_embedding_dim,
             linear_blocks_number=linear_blocks_number

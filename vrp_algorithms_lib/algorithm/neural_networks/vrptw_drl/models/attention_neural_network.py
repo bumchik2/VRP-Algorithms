@@ -5,17 +5,19 @@ However, the model below is quite flexible and may be used for multiple variatio
 for example, for VRP with time windows.
 """
 
+from typing import List
+
 import torch
 import torch.nn as nn
+
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.graph_encoder import GraphEncoder
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.routes_encoder import RoutesEncoder
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.vehicles_state_encoder import \
-    VehiclesStateEncoder
-from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.vehicle_selection_decoder import \
-    VehicleSelectionDecoder
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.location_selection_decoder import \
     LocationSelectionDecoder, LocationSelectionDecoderWithCompatibilityLayer
-from typing import List
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.routes_encoder import RoutesEncoder
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.vehicle_selection_decoder import \
+    VehicleSelectionDecoder
+from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.modules.vehicles_state_encoder import \
+    VehiclesStateEncoder
 
 
 class AttentionNeuralNetwork(nn.Module):
@@ -32,6 +34,7 @@ class AttentionNeuralNetwork(nn.Module):
             routes_embedding_dim: int = 512,  # 512 in the original article
             num_heads: int = 8,  # 8 in the original article
             linear_blocks_number: int = 1,  # number of linear blocks in the end of each model.
+            use_old_version=False,
     ):
         super().__init__()
 
@@ -48,13 +51,15 @@ class AttentionNeuralNetwork(nn.Module):
         self.vehicles_state_encoder = VehiclesStateEncoder(
             vehicles_state_information_dim=vehicles_state_information_dim,
             vehicles_state_embedding_dim=vehicles_state_embedding_dim,
-            linear_blocks_number=linear_blocks_number
+            linear_blocks_number=linear_blocks_number,
+            use_old_version=use_old_version
         )
 
         self.routes_encoder = RoutesEncoder(
             graph_embedding_dim=graph_embedding_dim,
             routes_embedding_dim=routes_embedding_dim,
-            linear_blocks_number=linear_blocks_number
+            linear_blocks_number=linear_blocks_number,
+            use_old_version=use_old_version
         )
 
         self.vehicle_selection_decoder = VehicleSelectionDecoder(
@@ -68,9 +73,11 @@ class AttentionNeuralNetwork(nn.Module):
         else:
             location_selection_decoder_class = LocationSelectionDecoder
 
+        vehicle_state_information_dim_in_location_selection_decoder = vehicles_state_information_dim \
+            if use_old_version else vehicles_state_embedding_dim
         self.location_selection_decoder = location_selection_decoder_class(
             graph_embedding_dim=graph_embedding_dim,
-            vehicles_state_information_dim=vehicles_state_information_dim,
+            vehicles_state_information_dim=vehicle_state_information_dim_in_location_selection_decoder,
             locations_embedding_dim=locations_embedding_dim,
             routes_embedding_dim=routes_embedding_dim,
             num_heads=num_heads,
