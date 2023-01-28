@@ -15,18 +15,15 @@ class OutOfTimeCalculator(BaseMetricCalculator):
     ) -> float:
         total_out_of_time_minutes = 0
 
-        penalty_multipliers: Penalties = problem_description.penalties
+        for route in routes.routes:
+            visit_times = VisitTimeScheduler.get_locations_visit_times(problem_description, route)
 
-        if penalty_multipliers.out_of_time_penalty_per_minute > 0:
-            for route in routes.routes:
-                visit_times = VisitTimeScheduler.get_locations_visit_times(problem_description, route)
+            for location_id, visit_time in zip(route.location_ids, visit_times):
+                location = problem_description.locations[location_id]
+                out_of_time_s: int = max(0, visit_time - location.time_window_end_s,
+                                         location.time_window_start_s - visit_time)
+                out_of_time_minutes: float = out_of_time_s / 60.0
 
-                for location_id, visit_time in zip(route.location_ids, visit_times):
-                    location = problem_description.locations[location_id]
-                    out_of_time_s: int = max(0, visit_time - location.time_window_end_s,
-                                             location.time_window_start_s - visit_time)
-                    out_of_time_minutes: float = out_of_time_s / 60.0
-
-                    total_out_of_time_minutes += out_of_time_minutes
+                total_out_of_time_minutes += out_of_time_minutes
 
         return total_out_of_time_minutes
