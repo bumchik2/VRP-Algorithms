@@ -16,7 +16,7 @@ class SwapRandomVerticesWithinRoute(RoutesMutationBase):
 
         while random_route is None or len(random_route.location_ids) < 2:
             random_route = routes.routes[np.random.randint(low=0, high=len(routes.routes))]
-    
+
         i, j = random.sample(range(len(random_route.location_ids)), k=2)
         assert i != j
 
