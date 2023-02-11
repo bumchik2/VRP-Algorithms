@@ -79,7 +79,8 @@ def transform_request(
         distance_penalty: float,
         global_proximity_factor: float,
         solver_temperature: int,
-        solver_time_limit_s: Optional[int] = None
+        solver_time_limit_s: Optional[int] = None,
+        max_time_window_size_s: Optional[int] = None
 ) -> dict:
     """
     Remove fields that are not needed
@@ -87,9 +88,10 @@ def transform_request(
     :param out_of_time_penalty_per_minute: penalty for one minute of time for each location
     :param distance_penalty: penalty for one km of travel distance
     :param global_proximity_factor: global_proximity_factor
+    (see vrp_algorithms_lib.problem.penalties.global_proximity_penalty_calculator)
     :param solver_temperature: initial annealing temperature of the solver
     :param solver_time_limit_s: solver_time_limit_s
-    (see vrp_algorithms_lib.problem.penalties.global_proximity_penalty_calculator)
+    :param max_time_window_size_s: Optional[int]
     :return: clean dict with yandex solver request
     """
     if 'depot' in solver_request:
@@ -101,6 +103,10 @@ def transform_request(
     locations = []
     for i, location in enumerate(solver_request['locations']):
         time_window_dict = date_helpers.time_window_str2dict(location['time_window'])
+
+        if max_time_window_size_s is not None:
+            time_window_dict['end'] = min(time_window_dict['end'], time_window_dict['begin'] + max_time_window_size_s)
+
         time_window = f'{date_helpers.seconds_to_time_string(time_window_dict["begin"])}-' \
                       f'{date_helpers.seconds_to_time_string(time_window_dict["end"])}'
         hard_time_window = f'{date_helpers.seconds_to_time_string(time_window_dict["begin"])}-100.00:00:00'
