@@ -43,10 +43,11 @@ def train_rl(
 
     history = defaultdict(lambda: defaultdict(list))
     total_penalty_calculator = TotalPenaltyCalculator()
-    epoch_start_time = time.time()
     epsilon = initial_epsilon
 
     for _ in tqdm(range(num_epochs)):
+        epoch_start_time = time.time()
+
         problem_description, _ = dataset[0]
 
         # Generate several trajectories
