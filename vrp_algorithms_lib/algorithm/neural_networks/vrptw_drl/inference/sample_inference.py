@@ -25,18 +25,6 @@ class SampleInference(SequentialInference):
 
         self._epsilon = epsilon
 
-    def set_epsilon(
-            self,
-            epsilon: float
-    ):
-        self._epsilon = epsilon
-
-    def multiply_epsilon(
-            self,
-            multiplier: float
-    ):
-        self._epsilon *= multiplier
-
     def choose_courier_idx(
             self,
             courier_logits: torch.Tensor

@@ -35,10 +35,16 @@ def train_rl(
         percentile_best: float,
         checkpoint_path: Optional[Union[os.PathLike, str]] = None,
         lr_scheduler=None,
+        initial_epsilon: float = 1.0,
+        epsilon_multiplier: float = 1.0
 ):
+    assert 0 < initial_epsilon <= 1.0
+    assert 0 < epsilon_multiplier <= 1.0
+
     history = defaultdict(lambda: defaultdict(list))
     total_penalty_calculator = TotalPenaltyCalculator()
     epoch_start_time = time.time()
+    epsilon = initial_epsilon
 
     for _ in tqdm(range(num_epochs)):
         problem_description, _ = dataset[0]
@@ -49,7 +55,8 @@ def train_rl(
             inference = SampleInference(
                 model=model,
                 problem_description=problem_description,
-                routes=None
+                routes=None,
+                epsilon=epsilon
             )
             routes = inference.solve_problem()
             routes_list.append(
@@ -88,6 +95,8 @@ def train_rl(
             history=history,
             need_to_clear_output_and_draw_statistics=False
         )
+
+        epsilon *= epsilon_multiplier
 
         clear_output_and_draw_statistics(
             epoch_start_time=epoch_start_time,
