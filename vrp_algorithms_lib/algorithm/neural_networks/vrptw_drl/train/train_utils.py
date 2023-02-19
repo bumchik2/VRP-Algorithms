@@ -21,11 +21,12 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.models.model_base im
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.objects import ProblemState, Action, \
     initialize_problem_state
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.dataset_with_prepared_solutions import \
-    DatasetWithPreparedSolutions
+    DatasetWithPreparedSolutions, DatasetWithFixedPreparedSolutions
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.simple_dataset import SimpleDataset
 from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Routes
-from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import ALL_PENALTY_CALCULATORS
+from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import ALL_PENALTY_CALCULATORS, \
+    TotalPenaltyCalculator
 
 
 class TrainMode(Enum):
@@ -49,16 +50,10 @@ def plot_learning_curves(history):
     plt.grid(visible=True)
 
     plt.subplot(1, 4, 2)
-    plt.title('Delta reward percentage per epoch, %', fontsize=15)
-    mean_delta_reward_percentage_history = history['train']['mean_delta_reward_percentage']
-    plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), mean_delta_reward_percentage_history,
-             label='mean')
-    plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), history['train'][
-        '5th_percentile_delta_reward_percentage'], label='5th percentile')
-    plt.plot(range(1, len(mean_delta_reward_percentage_history) + 1), history['train'][
-        '95th_percentile_delta_reward_percentage'], label='95th percentile')
+    plt.title('Mean penalty per location', fontsize=15)
+    mean_penalty_per_location = history['train']['mean_penalty_per_location_per_epoch']
+    plt.plot(range(1, len(mean_penalty_per_location) + 1), mean_penalty_per_location)
     plt.xlabel('Epoch', fontsize=15)
-    plt.legend()
     plt.grid(visible=True)
 
     plt.subplot(1, 4, 3)
@@ -154,7 +149,9 @@ def train_one_problem(
     return {
         'incorrect_location_choices_share': incorrect_location_choices / len(problem_description.locations),
         'mean_problem_loss': average_problem_loss,
-        'delta_reward_percentage': delta_reward_percentage
+        'delta_reward_percentage': delta_reward_percentage,
+        'mean_penalty_per_location': TotalPenaltyCalculator().calculate(problem_description, routes) /
+                                     len(problem_description.locations)
     }
 
 
@@ -194,27 +191,46 @@ def get_and_plot_inference_examples(
     plt.tight_layout()
 
 
+def clear_output_and_draw_statistics(
+        epoch_start_time: float,
+        history: dict,
+        num_epochs,
+        trainer: ModelBase,
+        model: Union[ModelBase, torch.nn.Module],
+        problem_description_samples: List[List[Tuple[ProblemDescription, Routes]]]
+):
+    clear_output()
+    epoch = len(history['train']['mean_loss'])
+    print(f'Epoch {epoch} of {num_epochs} took {round(time.time() - epoch_start_time, 3)} seconds')
+    plot_learning_curves(history)
+    get_and_plot_inference_examples(trainer, problem_description_samples, suptitle='Trainer inference example')
+    get_and_plot_inference_examples(model, problem_description_samples, suptitle='Model inference example')
+    plt.show()
+
+
 def train(
         model: Union[ModelBase, torch.nn.Module],
         trainer: ModelBase,
         criterion,
         optimizer: torch.optim.Optimizer,
         num_epochs: int,
-        dataset: Union[SimpleDataset, DatasetWithPreparedSolutions],
+        dataset: Union[SimpleDataset, DatasetWithPreparedSolutions, DatasetWithFixedPreparedSolutions],
         problem_description_samples: List[List[Tuple[ProblemDescription, Routes]]],
         device: torch.device,
         train_mode: TrainMode,
         checkpoint_path: Optional[Union[os.PathLike, str]] = None,
         lr_scheduler=None,
+        history: Optional[dict] = None,
+        need_to_clear_output_and_draw_statistics: bool = True
 ):
-    history = defaultdict(lambda: defaultdict(list))
+    history = history or defaultdict(lambda: defaultdict(list))
 
-    for epoch in tqdm(range(num_epochs), position=0, leave=True):
+    for _ in tqdm(range(num_epochs), position=0, leave=True):
         epoch_start_time = time.time()
 
         problem_losses = []
-        delta_reward_percentages = []
         incorrect_locations_choices_share = []
+        mean_penalties_per_location = []
 
         for i, (problem_description, routes) in tqdm(enumerate(dataset), total=len(dataset), position=0, leave=False):
             train_epoch_info = train_one_problem(
@@ -232,7 +248,7 @@ def train(
 
             incorrect_locations_choices_share.append(train_epoch_info['incorrect_location_choices_share'])
             problem_losses.append(train_epoch_info['mean_problem_loss'])
-            delta_reward_percentages.append(train_epoch_info['delta_reward_percentage'])
+            mean_penalties_per_location.append(train_epoch_info['mean_penalty_per_location'])
 
             if i + 1 == len(dataset):
                 break
@@ -249,15 +265,16 @@ def train(
         history['train']['5th_percentile_loss'].append(np.quantile(problem_losses, 0.05))
         history['train']['95th_percentile_loss'].append(np.quantile(problem_losses, 0.95))
 
-        history['train']['mean_delta_reward_percentage'].append(np.mean(delta_reward_percentages))
-        history['train']['5th_percentile_delta_reward_percentage'].append(np.quantile(delta_reward_percentages, 0.05))
-        history['train']['95th_percentile_delta_reward_percentage'].append(np.quantile(delta_reward_percentages, 0.95))
+        history['train']['mean_penalty_per_location_per_epoch'].append(np.mean(mean_penalties_per_location))
 
-        clear_output()
-        print(f'Epoch {epoch + 1} of {num_epochs} took {round(time.time() - epoch_start_time, 3)} seconds')
-        plot_learning_curves(history)
-        get_and_plot_inference_examples(trainer, problem_description_samples, suptitle='Trainer inference example')
-        get_and_plot_inference_examples(model, problem_description_samples, suptitle='Model inference example')
-        plt.show()
+        if need_to_clear_output_and_draw_statistics:
+            clear_output_and_draw_statistics(
+                epoch_start_time=epoch_start_time,
+                history=history,
+                num_epochs=num_epochs,
+                trainer=trainer,
+                model=model,
+                problem_description_samples=problem_description_samples
+            )
 
     return history

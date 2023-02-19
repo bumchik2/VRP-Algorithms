@@ -12,6 +12,28 @@ from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.transform.tran
 from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
 
 
+class DatasetWithFixedPreparedSolutions(data_utils.Dataset):
+    def __init__(
+            self,
+            problem_description_list: List[ProblemDescription],
+            routes_list: List[Routes],
+    ):
+        super().__init__()
+
+        assert len(problem_description_list) == len(routes_list)
+
+        self.problem_description_list = problem_description_list
+        self.routes_list = routes_list
+
+        self.dataset_size = len(problem_description_list)
+
+    def __len__(self):
+        return self.dataset_size
+
+    def __getitem__(self, idx: int) -> Tuple[ProblemDescription, Routes]:
+        return self.problem_description_list[idx], self.routes_list[idx]
+
+
 class DatasetWithPreparedSolutions(data_utils.Dataset):
     def __init__(
             self,
