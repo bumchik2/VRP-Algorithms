@@ -42,4 +42,9 @@ class SampleInference(SequentialInference):
             locations_logits: torch.Tensor
     ) -> int:
         p = torch.nn.Softmax()(locations_logits).to(torch.device('cpu')).numpy()
-        return np.random.choice(range(len(locations_logits)), p=p)
+
+        gen = np.random.uniform()
+        if gen <= self._epsilon:
+            return np.random.choice(range(len(locations_logits)), p=p)
+        else:
+            return np.argmax(p)
