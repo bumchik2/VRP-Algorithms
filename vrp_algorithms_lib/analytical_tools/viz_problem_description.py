@@ -1,5 +1,5 @@
 from typing import List
-from typing import Optional
+from typing import Optional, Tuple
 
 import matplotlib.pyplot as plt
 
@@ -82,12 +82,14 @@ def plot_algorithms_inference_examples(
         algorithms_names: List[str],
         problem_description_list: List[ProblemDescription],
         routes_lists: List[List[Routes]],
-        first_k: Optional[int] = None
+        first_k: Optional[int] = None,
+        figsize: Optional[Tuple[int, int]] = None
 ) -> None:
     assert len(problem_description_list) == len(routes_lists[0])
     assert len(problem_description_list) <= 10 or first_k is not None
 
-    figsize = (5 * len(algorithms_names), 5 * min(len(problem_description_list), first_k))
+    if not figsize:
+        figsize = (5 * len(algorithms_names), 5 * min(len(problem_description_list), first_k))
     fig, axes = plt.subplots(min(len(problem_description_list), first_k), len(algorithms_names), figsize=figsize)
 
     for i, algorithm_name in enumerate(algorithms_names):

@@ -1,11 +1,11 @@
 from copy import deepcopy
-from typing import List
+from typing import List, Set
 
 from vrp_algorithms_lib.algorithm.base_algorithm import BaseAlgorithm
 from vrp_algorithms_lib.algorithm.clusterization.clusterizer_name import CLUSTERIZER_NAME_TO_CLUSTERIZER_TYPE
 from vrp_algorithms_lib.algorithm.clusterization.clusterizer_name import ClusterizerName
 from vrp_algorithms_lib.problem.models import ProblemDescription
-from vrp_algorithms_lib.problem.models import Route
+from vrp_algorithms_lib.problem.models import Route, LocationId, CourierId
 from vrp_algorithms_lib.problem.models import Routes
 from vrp_algorithms_lib.problem.penalties.total_penalty_calculator import TotalPenaltyCalculator
 
@@ -17,7 +17,49 @@ class GreedyAlgorithm(BaseAlgorithm):
     ):
         self.clusterizer = CLUSTERIZER_NAME_TO_CLUSTERIZER_TYPE[clusterizer_name]()
 
-    def solve_problem(self, problem_description: ProblemDescription) -> Routes:
+    def get_greedy_route(
+            self,
+            problem_description: ProblemDescription,
+            location_ids_to_visit: Set[LocationId],
+            courier_id: CourierId
+    ) -> Route:
+        location_ids_to_visit = deepcopy(location_ids_to_visit)
+
+        route = Route(
+            vehicle_id=courier_id,
+            location_ids=[]
+        )
+
+        previous_point_id = problem_description.get_depot().id
+
+        while len(location_ids_to_visit) > 0:
+            next_location = None
+            min_distance = None
+
+            for potential_next_location_id in location_ids_to_visit:
+                potential_next_location = problem_description.locations[potential_next_location_id]
+
+                if len(route.location_ids) == 0:
+                    current_distance = problem_description.distance_matrix.depots_to_locations_distances[
+                        previous_point_id][potential_next_location_id]
+                else:
+                    current_distance = problem_description.distance_matrix.locations_to_locations_distances[
+                        previous_point_id][potential_next_location_id]
+
+                if next_location is None or current_distance < min_distance:
+                    next_location = potential_next_location
+                    min_distance = current_distance
+
+            route.location_ids.append(next_location.id)
+            previous_point_id = next_location.id
+            location_ids_to_visit.discard(next_location.id)
+
+        return route
+
+    def solve_problem(
+            self,
+            problem_description: ProblemDescription
+    ) -> Routes:
         min_penalty = 10 ** 9
         best_routes = None
 
@@ -39,38 +81,15 @@ class GreedyAlgorithm(BaseAlgorithm):
                      if current_cluster_number == cluster_number]
                 )
 
-                route = Route(
-                    vehicle_id=courier_id,
-                    location_ids=[]
+                route = self.get_greedy_route(
+                    problem_description,
+                    location_ids_to_visit,
+                    courier_id
                 )
-
-                previous_point_id = problem_description.get_depot().id
-
-                while len(location_ids_to_visit) > 0:
-                    next_location = None
-                    min_distance = None
-
-                    for potential_next_location_id in location_ids_to_visit:
-                        potential_next_location = problem_description.locations[potential_next_location_id]
-
-                        if len(route.location_ids) == 0:
-                            current_distance = problem_description.distance_matrix.depots_to_locations_distances[
-                                previous_point_id][potential_next_location_id]
-                        else:
-                            current_distance = problem_description.distance_matrix.locations_to_locations_distances[
-                                previous_point_id][potential_next_location_id]
-
-                        if next_location is None or current_distance < min_distance:
-                            next_location = potential_next_location
-                            min_distance = current_distance
-
-                    route.location_ids.append(next_location.id)
-                    previous_point_id = next_location.id
-                    location_ids_to_visit.discard(next_location.id)
 
                 routes.routes.append(route)
 
-            assert(len(routes.routes) == number_of_clusters)
+            assert (len(routes.routes) == number_of_clusters)
 
             total_penalty = TotalPenaltyCalculator().calculate(
                 problem_description=problem_description, routes=routes)
