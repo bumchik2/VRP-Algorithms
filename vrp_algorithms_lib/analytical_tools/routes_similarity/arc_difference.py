@@ -1,9 +1,20 @@
 from vrp_algorithms_lib.analytical_tools.routes_similarity.routes_similarity_metric_base import \
     RoutesSimilarityMetricBase
-from vrp_algorithms_lib.problem.models import Routes, ProblemDescription
+from vrp_algorithms_lib.problem.models import ProblemDescription
+from vrp_algorithms_lib.problem.models import Routes
 
 
-class RoutesSimilarityEqualityMetric(RoutesSimilarityMetricBase):
+class ArcDifference(RoutesSimilarityMetricBase):
+    """
+    https://arxiv.org/pdf/2108.04578.pdf#cite.ceikute2013routing
+    Arc Difference (AD) measures the number of arcs traveled in the actual solution but not
+    in the MLE routing solution. It is calculated by taking the set difference of the arc sets of
+    the test and predicted solutions. The percentage is computed by dividing AD by the total
+    number of arcs in the whole routing.
+    """
+    def get_metric_name(self) -> str:
+        return 'arc_difference'
+
     def calculate(
             self,
             routes_1: Routes,

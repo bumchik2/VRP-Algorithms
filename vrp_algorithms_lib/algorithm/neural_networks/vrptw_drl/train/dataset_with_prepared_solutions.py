@@ -9,7 +9,8 @@ import torch.utils.data as data_utils
 
 import vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.common_utils as common_utils
 from vrp_algorithms_lib.algorithm.neural_networks.vrptw_drl.train.transform.transform import Transform
-from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
+from vrp_algorithms_lib.problem.models import ProblemDescription
+from vrp_algorithms_lib.problem.models import Routes
 
 
 class DatasetWithFixedPreparedSolutions(data_utils.Dataset):
@@ -69,15 +70,20 @@ class DatasetWithPreparedSolutions(data_utils.Dataset):
     ) -> Tuple[ProblemDescription, Routes]:
         # Choose random problem description out of problem_description_list
         # Choose random num_vehicles routes out of there.
-        random_problem_description_idx = np.random.randint(low=0, high=len(self.problem_description_list))
-        chosen_problem_description = self.problem_description_list[random_problem_description_idx]
-        chosen_routes = self.routes_list[random_problem_description_idx]
 
-        # Only choose vehicles with non-empty routes
-        non_empty_couriers_ids = []
-        for route in chosen_routes.routes:
-            if len(route.location_ids) > 0:
-                non_empty_couriers_ids.append(route.vehicle_id)
+        while True:
+            random_problem_description_idx = np.random.randint(low=0, high=len(self.problem_description_list))
+            chosen_problem_description = self.problem_description_list[random_problem_description_idx]
+            chosen_routes = self.routes_list[random_problem_description_idx]
+
+            # Only choose vehicles with non-empty routes
+            non_empty_couriers_ids = []
+            for route in chosen_routes.routes:
+                if len(route.location_ids) > 0:
+                    non_empty_couriers_ids.append(route.vehicle_id)
+
+            if len(non_empty_couriers_ids) >= num_vehicles:
+                break
 
         chosen_vehicle_ids = random.sample(non_empty_couriers_ids, k=num_vehicles)
         assert len(chosen_vehicle_ids) == num_vehicles
@@ -98,6 +104,7 @@ class DatasetWithPreparedSolutions(data_utils.Dataset):
     def __getitem__(self, idx: int) -> Tuple[ProblemDescription, Routes]:
         num_vehicles = self.num_vehicles if self.num_vehicles is not None else sps.randint(
             self.min_vehicles, self.max_vehicles + 1).rvs()
+
         random_problem_description, routes = self._get_random_problem_description_and_routes(num_vehicles)
 
         if self.transform is not None:

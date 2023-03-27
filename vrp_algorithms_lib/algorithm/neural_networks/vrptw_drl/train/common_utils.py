@@ -1,12 +1,24 @@
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 import scipy.stats as sps
 
-from vrp_algorithms_lib.problem.models import ProblemDescription, Courier, Location, Depot, DepotId, CourierId, \
-    LocationId, Penalties, Point, Routes, DistanceMatrix, TimeMatrix
-from vrp_algorithms_lib.problem.models import get_geodesic_time_matrix, get_euclidean_distance_matrix
+from vrp_algorithms_lib.problem.models import Courier
+from vrp_algorithms_lib.problem.models import CourierId
+from vrp_algorithms_lib.problem.models import Depot
+from vrp_algorithms_lib.problem.models import DepotId
+from vrp_algorithms_lib.problem.models import DistanceMatrix
+from vrp_algorithms_lib.problem.models import Location
+from vrp_algorithms_lib.problem.models import LocationId
+from vrp_algorithms_lib.problem.models import Penalties
+from vrp_algorithms_lib.problem.models import Point
+from vrp_algorithms_lib.problem.models import ProblemDescription
+from vrp_algorithms_lib.problem.models import Routes
+from vrp_algorithms_lib.problem.models import TimeMatrix
+from vrp_algorithms_lib.problem.models import get_euclidean_distance_matrix
+from vrp_algorithms_lib.problem.models import get_geodesic_time_matrix
 
 
 def common_min_max_value_check(
@@ -129,6 +141,29 @@ def get_problem_description_slice(
         time_matrix=time_matrix,
         penalties=problem_description.penalties
     )
+
+
+def get_problem_description_routes_slice(
+        problem_description: ProblemDescription,
+        routes: Routes,
+        courier_ids: List[CourierId],
+        location_ids: Optional[List[LocationId]] = None
+) -> Tuple[ProblemDescription, Routes]:
+    routes_slice = get_routes_slice(
+        routes,
+        courier_ids,
+        location_ids
+    )
+
+    location_ids = location_ids or sum([route.location_ids for route in routes_slice.routes], [])
+
+    problem_description_slice = get_problem_description_slice(
+        problem_description,
+        courier_ids,
+        location_ids
+    )
+
+    return problem_description_slice, routes_slice
 
 
 def get_random_problem_description(
