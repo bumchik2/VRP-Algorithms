@@ -38,8 +38,8 @@ def plot_map(request: dict, ax=None, legend=True):
         plt.figure(figsize=(12, 8))
         ax = plt.gca()
 
-    ax.set_xlabel('longitude', fontsize=14)
-    ax.set_ylabel('latitude', fontsize=14)
+    ax.set_xlabel('Долгота', fontsize=14)
+    ax.set_ylabel('Широта', fontsize=14)
 
     locations_lons = [location['point']['lon'] for location in request['locations']]
     locations_lats = [location['point']['lat'] for location in request['locations']]

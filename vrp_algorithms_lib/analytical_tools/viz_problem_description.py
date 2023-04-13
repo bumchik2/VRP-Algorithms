@@ -41,8 +41,8 @@ def plot_map(problem_description: ProblemDescription, ax=None, legend: bool = Tr
         plt.figure(figsize=(12, 8))
         ax = plt.gca()
 
-    ax.set_xlabel('longitude', fontsize=14)
-    ax.set_ylabel('latitude', fontsize=14)
+    ax.set_xlabel('Долгота', fontsize=14)
+    ax.set_ylabel('Широта', fontsize=14)
 
     lons = [location.point.lon for location in problem_description.locations.values()]
     lats = [location.point.lat for location in problem_description.locations.values()]
