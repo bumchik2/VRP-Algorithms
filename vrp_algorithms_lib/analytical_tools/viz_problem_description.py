@@ -1,10 +1,12 @@
 from typing import List
-from typing import Optional, Tuple
+from typing import Optional
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 
-from vrp_algorithms_lib.problem.models import ProblemDescription, Routes
+from vrp_algorithms_lib.problem.models import ProblemDescription
 from vrp_algorithms_lib.problem.models import Route
+from vrp_algorithms_lib.problem.models import Routes
 
 
 def plot_route(problem_description: ProblemDescription, route: Route, ax=None, legend: bool = True):
@@ -25,10 +27,7 @@ def plot_route(problem_description: ProblemDescription, route: Route, ax=None, l
     lons = [problem_description.locations[location_id].point.lon for location_id in route.location_ids]
     lats = [problem_description.locations[location_id].point.lat for location_id in route.location_ids]
 
-    ax.plot([depot_lon] + lons, [depot_lat] + lats, label=route.vehicle_id)
-
-    if legend:
-        ax.legend()
+    ax.plot([depot_lon] + lons, [depot_lat] + lats)
 
     if need_to_show:
         plt.show()
@@ -50,7 +49,7 @@ def plot_map(problem_description: ProblemDescription, ax=None, legend: bool = Tr
 
     depots_lons = [depot.point.lon for depot in problem_description.depots.values()]
     depots_lats = [depot.point.lat for depot in problem_description.depots.values()]
-    ax.scatter(depots_lons, depots_lats, c='b', s=100, marker='*', label='depots')
+    ax.scatter(depots_lons, depots_lats, c='b', s=100, marker='*', label='Депо')
 
     ax.grid(visible=True)
 

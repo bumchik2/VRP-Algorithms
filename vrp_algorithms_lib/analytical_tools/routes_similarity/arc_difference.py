@@ -31,4 +31,4 @@ class ArcDifference(RoutesSimilarityMetricBase):
                 similarity_metric += 1
         similarity_metric /= len(edges_1)
 
-        return similarity_metric
+        return 1.0 - similarity_metric

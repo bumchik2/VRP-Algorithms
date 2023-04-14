@@ -63,4 +63,4 @@ class RouteDifference(RoutesSimilarityMetricBase):
             incorrect_locations += incorrect_locations_for_route
             total_locations += len(route_1.location_ids)
 
-        return (total_locations - incorrect_locations) / total_locations
+        return incorrect_locations / total_locations
