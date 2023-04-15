@@ -82,7 +82,8 @@ def plot_algorithms_inference_examples(
         problem_description_list: List[ProblemDescription],
         routes_lists: List[List[Routes]],
         first_k: Optional[int] = None,
-        figsize: Optional[Tuple[int, int]] = None
+        figsize: Optional[Tuple[int, int]] = None,
+        need_to_show: bool = True
 ) -> None:
     assert len(problem_description_list) == len(routes_lists[0])
     assert len(problem_description_list) <= 10 or first_k is not None
@@ -107,4 +108,6 @@ def plot_algorithms_inference_examples(
             )
 
     fig.tight_layout()
-    plt.show()
+
+    if need_to_show:
+        plt.show()
