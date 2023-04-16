@@ -66,12 +66,12 @@ def plot_routes(problem_description: ProblemDescription, routes: Routes, title='
         plt.figure(figsize=(12, 8))
         ax = plt.gca()
 
-    plot_map(problem_description, ax, legend=legend)
-
     ax.set_title(title, fontsize=16)
 
     for route in routes.routes:
         plot_route(problem_description, route, ax, legend=legend)
+
+    plot_map(problem_description, ax, legend=legend)
 
     if need_to_show:
         plt.show()
